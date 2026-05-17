@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="마커 기반 AR로 도형을 학습하세요">
+  <title>AR 학습 (마커) - 도형 왕국</title>
+  
+  <!-- A-Frame -->
+  <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+  
+  <!-- AR.js -->
+  <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+  
+  <!-- CSS -->
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/ar-ui.css">
+  
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="ar-page">
+  <!-- AR UI 오버레이 -->
+  <div class="ar-overlay">
+    <!-- 상단 정보 -->
+    <div class="ar-header">
+      <button class="btn-back" onclick="history.back()">
+        <span>← 뒤로</span>
+      </button>
+      <div class="ar-info">
+        <h2 id="level-title">레벨 1: 평면 도형 기초</h2>
+        <p id="level-desc">마커를 카메라에 비춰보세요</p>
+      </div>
+    </div>
+    
+    <!-- 도형 정보 패널 -->
+    <div class="shape-info" id="shape-info" style="display: none;">
+      <div class="shape-info-content">
+        <h3 id="shape-name">삼각형</h3>
+        <div class="shape-properties">
+          <p><strong>변:</strong> <span id="shape-sides">3개</span></p>
+          <p><strong>꼭짓점:</strong> <span id="shape-vertices">3개</span></p>
+          <p><strong>각:</strong> <span id="shape-angles">3개</span></p>
+        </div>
+        <p class="shape-description" id="shape-description">
+          변이 3개인 도형입니다.
+        </p>
+        <div class="shape-examples">
+          <strong>예시:</strong>
+          <span id="shape-examples">삼각자, 표지판, 피라미드</span>
+        </div>
+      </div>
+      <button class="btn-close" onclick="closeShapeInfo()">✕</button>
+    </div>
+    
+    <!-- 컨트롤 버튼 -->
+    <div class="ar-controls">
+      <button class="control-btn" id="btn-rotate" title="회전">
+        <span>🔄</span>
+      </button>
+      <button class="control-btn" id="btn-info" title="정보" onclick="toggleShapeInfo()">
+        <span>ℹ️</span>
+      </button>
+      <button class="control-btn" id="btn-help" title="도움말" onclick="showHelp()">
+        <span>❓</span>
+      </button>
+    </div>
+    
+    <!-- 마커 감지 상태 -->
+    <div class="marker-status" id="marker-status">
+      <p>📷 마커를 찾는 중...</p>
+    </div>
+    
+    <!-- 도움말 모달 -->
+    <div class="modal" id="help-modal" style="display: none;">
+      <div class="modal-content">
+        <h3>AR 사용 방법</h3>
+        <ol>
+          <li>카메라 권한을 허용해주세요</li>
+          <li>마커를 인쇄하거나 화면에 띄워주세요</li>
+          <li>카메라를 마커에 비춰주세요</li>
+          <li>도형이 나타나면 정보를 확인하세요</li>
+        </ol>
+        <p><strong>팁:</strong> 밝은 곳에서 사용하면 더 잘 인식됩니다!</p>
+        <button class="btn btn-primary" onclick="closeHelp()">확인</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- A-Frame AR 씬 -->
+  <a-scene
+    embedded
+    arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;"
+    vr-mode-ui="enabled: false"
+    renderer="logarithmicDepthBuffer: true; precision: medium;"
+    loading-screen="enabled: false">
+    
+    <!-- 카메라 -->
+    <a-entity camera></a-entity>
+    
+    <!-- 마커 1: Hiro (기본 테스트용) -->
+    <a-marker preset="hiro" id="marker-hiro">
+      <a-entity id="shape-hiro" position="0 0 0">
+        <!-- 도형이 JavaScript로 동적 생성됨 -->
+      </a-entity>
+    </a-marker>
+    
+    <!-- 마커 2: Kanji -->
+    <a-marker preset="kanji" id="marker-kanji">
+      <a-entity id="shape-kanji" position="0 0 0">
+        <!-- 도형이 JavaScript로 동적 생성됨 -->
+      </a-entity>
+    </a-marker>
+    
+    <!-- 커스텀 마커 (레벨별) -->
+    <!-- 레벨 1 마커 -->
+    <a-marker type="pattern" url="assets/markers/level1-marker.patt" id="marker-level1">
+      <a-entity id="shape-level1" position="0 0 0">
+        <!-- 도형이 JavaScript로 동적 생성됨 -->
+      </a-entity>
+    </a-marker>
+    
+    <!-- 레벨 2 마커 -->
+    <a-marker type="pattern" url="assets/markers/level2-marker.patt" id="marker-level2">
+      <a-entity id="shape-level2" position="0 0 0">
+        <!-- 도형이 JavaScript로 동적 생성됨 -->
+      </a-entity>
+    </a-marker>
+    
+    <!-- 레벨 3 마커 -->
+    <a-marker type="pattern" url="assets/markers/level3-marker.patt" id="marker-level3">
+      <a-entity id="shape-level3" position="0 0 0">
+        <!-- 도형이 JavaScript로 동적 생성됨 -->
+      </a-entity>
+    </a-marker>
+    
+    <!-- 레벨 4 마커 -->
+    <a-marker type="pattern" url="assets/markers/level4-marker.patt" id="marker-level4">
+      <a-entity id="shape-level4" position="0 0 0">
+        <!-- 도형이 JavaScript로 동적 생성됨 -->
+      </a-entity>
+    </a-marker>
+    
+    <!-- 레벨 5 마커 -->
+    <a-marker type="pattern" url="assets/markers/level5-marker.patt" id="marker-level5">
+      <a-entity id="shape-level5" position="0 0 0">
+        <!-- 도형이 JavaScript로 동적 생성됨 -->
+      </a-entity>
+    </a-marker>
+    
+    <!-- 레벨 6 마커 -->
+    <a-marker type="pattern" url="assets/markers/level6-marker.patt" id="marker-level6">
+      <a-entity id="shape-level6" position="0 0 0">
+        <!-- 도형이 JavaScript로 동적 생성됨 -->
+      </a-entity>
+    </a-marker>
+  </a-scene>
+
+  <!-- JavaScript -->
+  <script src="js/utils.js"></script>
+  <script src="js/geometry-shapes.js"></script>
+  <script src="js/ar-marker.js"></script>
+  
+  <script>
+    // UI 함수들
+    function toggleShapeInfo() {
+      const infoPanel = document.getElementById('shape-info');
+      if (infoPanel.style.display === 'none') {
+        infoPanel.style.display = 'block';
+      } else {
+        infoPanel.style.display = 'none';
+      }
+    }
+    
+    function closeShapeInfo() {
+      document.getElementById('shape-info').style.display = 'none';
+    }
+    
+    function showHelp() {
+      document.getElementById('help-modal').style.display = 'flex';
+    }
+    
+    function closeHelp() {
+      document.getElementById('help-modal').style.display = 'none';
+    }
+    
+    // 페이지 로드 시 도움말 표시
+    window.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => {
+        showHelp();
+      }, 1000);
+    });
+  </script>
+</body>
+</html>

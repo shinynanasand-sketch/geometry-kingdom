@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="아이템을 구매하세요">
+  <title>상점 - 도형 왕국</title>
+  
+  <!-- CSS -->
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="shop-page">
+  <!-- 헤더 -->
+  <header class="header">
+    <div class="container">
+      <button class="btn-back" onclick="history.back()">← 뒤로</button>
+      <h1>상점</h1>
+      <div class="coin-balance">
+        <span class="icon">🪙</span>
+        <span id="coin-count">0</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- 네비게이션 -->
+  <nav class="nav">
+    <div class="container">
+      <ul class="nav-list">
+        <li class="nav-item">
+          <a href="index.html">
+            <span class="icon">🏠</span>
+            <span class="text">홈</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="progress.html">
+            <span class="icon">📊</span>
+            <span class="text">진행도</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="collection.html">
+            <span class="icon">📚</span>
+            <span class="text">도감</span>
+          </a>
+        </li>
+        <li class="nav-item active">
+          <a href="shop.html">
+            <span class="icon">🏪</span>
+            <span class="text">상점</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="minigames.html">
+            <span class="icon">🎮</span>
+            <span class="text">게임</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- 메인 콘텐츠 -->
+  <main class="main">
+    <div class="container">
+      <!-- 환영 메시지 -->
+      <section class="shop-welcome">
+        <h2>🏪 도형 왕국 상점</h2>
+        <p>코인으로 유용한 아이템을 구매하세요!</p>
+      </section>
+
+      <!-- 아이템 카테고리 탭 -->
+      <section class="shop-tabs">
+        <button class="tab-btn active" data-category="all" onclick="filterItems('all')">
+          전체
+        </button>
+        <button class="tab-btn" data-category="consumable" onclick="filterItems('consumable')">
+          소모품
+        </button>
+        <button class="tab-btn" data-category="buff" onclick="filterItems('buff')">
+          버프
+        </button>
+        <button class="tab-btn" data-category="cosmetic" onclick="filterItems('cosmetic')">
+          꾸미기
+        </button>
+      </section>
+
+      <!-- 아이템 목록 -->
+      <section class="shop-items">
+        <div class="items-grid" id="items-grid">
+          <!-- 힌트 카드 -->
+          <div class="item-card" data-category="consumable" data-item-id="hint-card">
+            <div class="item-icon">💡</div>
+            <div class="item-info">
+              <h3>힌트 카드</h3>
+              <p class="item-description">문제 힌트를 1개 볼 수 있어요</p>
+              <div class="item-owned">보유: <span id="hint-card-count">0</span>개</div>
+            </div>
+            <div class="item-footer">
+              <div class="item-price">
+                <span class="icon">🪙</span>
+                <span class="price">50</span>
+              </div>
+              <button class="btn btn-primary" onclick="buyItem('hint-card', 50)">구매</button>
+            </div>
+          </div>
+
+          <!-- 시간 연장 -->
+          <div class="item-card" data-category="consumable" data-item-id="time-extend">
+            <div class="item-icon">⏰</div>
+            <div class="item-info">
+              <h3>시간 연장</h3>
+              <p class="item-description">퀴즈 시간을 30초 연장해요</p>
+              <div class="item-owned">보유: <span id="time-extend-count">0</span>개</div>
+            </div>
+            <div class="item-footer">
+              <div class="item-price">
+                <span class="icon">🪙</span>
+                <span class="price">30</span>
+              </div>
+              <button class="btn btn-primary" onclick="buyItem('time-extend', 30)">구매</button>
+            </div>
+          </div>
+
+          <!-- 더블 코인 -->
+          <div class="item-card" data-category="buff" data-item-id="double-coin">
+            <div class="item-icon">💰</div>
+            <div class="item-info">
+              <h3>더블 코인</h3>
+              <p class="item-description">1시간 동안 코인을 2배로 받아요</p>
+              <div class="item-duration">지속시간: 1시간</div>
+            </div>
+            <div class="item-footer">
+              <div class="item-price">
+                <span class="icon">🪙</span>
+                <span class="price">100</span>
+              </div>
+              <button class="btn btn-primary" onclick="buyItem('double-coin', 100)">구매</button>
+            </div>
+          </div>
+
+          <!-- 더블 XP -->
+          <div class="item-card" data-category="buff" data-item-id="double-xp">
+            <div class="item-icon">⭐</div>
+            <div class="item-info">
+              <h3>더블 XP</h3>
+              <p class="item-description">1시간 동안 경험치를 2배로 받아요</p>
+              <div class="item-duration">지속시간: 1시간</div>
+            </div>
+            <div class="item-footer">
+              <div class="item-price">
+                <span class="icon">🪙</span>
+                <span class="price">100</span>
+              </div>
+              <button class="btn btn-primary" onclick="buyItem('double-xp', 100)">구매</button>
+            </div>
+          </div>
+
+          <!-- 오답 노트 -->
+          <div class="item-card" data-category="consumable" data-item-id="wrong-note">
+            <div class="item-icon">📝</div>
+            <div class="item-info">
+              <h3>오답 노트</h3>
+              <p class="item-description">틀린 문제를 다시 풀 수 있어요</p>
+              <div class="item-owned">보유: <span id="wrong-note-count">0</span>개</div>
+            </div>
+            <div class="item-footer">
+              <div class="item-price">
+                <span class="icon">🪙</span>
+                <span class="price">80</span>
+              </div>
+              <button class="btn btn-primary" onclick="buyItem('wrong-note', 80)">구매</button>
+            </div>
+          </div>
+
+          <!-- 럭키 박스 -->
+          <div class="item-card special" data-category="consumable" data-item-id="lucky-box">
+            <div class="item-icon">🎁</div>
+            <div class="item-info">
+              <h3>럭키 박스</h3>
+              <p class="item-description">랜덤 아이템이 나와요!</p>
+              <div class="item-note">레어 카드 획득 가능!</div>
+            </div>
+            <div class="item-footer">
+              <div class="item-price">
+                <span class="icon">🪙</span>
+                <span class="price">200</span>
+              </div>
+              <button class="btn btn-special" onclick="buyItem('lucky-box', 200)">구매</button>
+            </div>
+          </div>
+
+          <!-- 캐릭터 스킨: 삼이 -->
+          <div class="item-card" data-category="cosmetic" data-item-id="skin-sam">
+            <div class="item-icon">🔺</div>
+            <div class="item-info">
+              <h3>삼이 스킨</h3>
+              <p class="item-description">삼이의 특별한 모습</p>
+              <div class="item-status" id="skin-sam-status">미보유</div>
+            </div>
+            <div class="item-footer">
+              <div class="item-price">
+                <span class="icon">🪙</span>
+                <span class="price">500</span>
+              </div>
+              <button class="btn btn-primary" onclick="buyItem('skin-sam', 500)">구매</button>
+            </div>
+          </div>
+
+          <!-- AR 효과: 반짝이 -->
+          <div class="item-card" data-category="cosmetic" data-item-id="ar-sparkle">
+            <div class="item-icon">✨</div>
+            <div class="item-info">
+              <h3>반짝이 효과</h3>
+              <p class="item-description">AR 도형에 반짝이는 효과를 추가해요</p>
+              <div class="item-status" id="ar-sparkle-status">미보유</div>
+            </div>
+            <div class="item-footer">
+              <div class="item-price">
+                <span class="icon">🪙</span>
+                <span class="price">300</span>
+              </div>
+              <button class="btn btn-primary" onclick="buyItem('ar-sparkle', 300)">구매</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 일일 특가 -->
+      <section class="daily-deals">
+        <h3>🔥 오늘의 특가</h3>
+        <div class="deal-card">
+          <div class="deal-badge">50% 할인!</div>
+          <div class="deal-content">
+            <div class="deal-icon">💎</div>
+            <div class="deal-info">
+              <h4>프리미엄 패키지</h4>
+              <p>힌트 카드 5개 + 시간 연장 3개</p>
+            </div>
+            <div class="deal-price">
+              <span class="original-price">400🪙</span>
+              <span class="sale-price">200🪙</span>
+            </div>
+            <button class="btn btn-special" onclick="buyDeal('premium-package', 200)">구매</button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- 구매 확인 모달 -->
+  <div class="modal" id="purchase-modal" style="display: none;">
+    <div class="modal-content">
+      <h3>구매 확인</h3>
+      <div class="purchase-info">
+        <div class="purchase-item">
+          <span class="item-icon" id="modal-item-icon">💡</span>
+          <span class="item-name" id="modal-item-name">힌트 카드</span>
+        </div>
+        <div class="purchase-price">
+          <span>가격: </span>
+          <span id="modal-item-price">50</span>
+          <span> 🪙</span>
+        </div>
+        <div class="purchase-balance">
+          <span>보유 코인: </span>
+          <span id="modal-coin-balance">0</span>
+          <span> 🪙</span>
+        </div>
+      </div>
+      <p class="purchase-question">구매하시겠습니까?</p>
+      <div class="modal-buttons">
+        <button class="btn btn-secondary" onclick="closePurchaseModal()">취소</button>
+        <button class="btn btn-primary" id="confirm-purchase-btn">구매</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 푸터 -->
+  <footer class="footer">
+    <div class="container">
+      <p>&copy; 2026 도형 왕국. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- JavaScript -->
+  <script src="js/utils.js"></script>
+  <script src="js/progress-tracker.js"></script>
+  <script src="js/shop-system.js"></script>
+  
+  <script>
+    // 페이지 로드 시 초기화
+    window.addEventListener('DOMContentLoaded', () => {
+      loadShop();
+    });
+
+    function loadShop() {
+      const progress = ProgressTracker.getProgress();
+      
+      // 코인 표시
+      document.getElementById('coin-count').textContent = progress.player.coins;
+      
+      // 보유 아이템 표시
+      if (progress.items) {
+        Object.keys(progress.items).forEach(itemId => {
+          const countEl = document.getElementById(`${itemId}-count`);
+          if (countEl) {
+            countEl.textContent = progress.items[itemId];
+          }
+        });
+      }
+    }
+
+    function filterItems(category) {
+      const items = document.querySelectorAll('.item-card');
+      const tabs = document.querySelectorAll('.tab-btn');
+      
+      // 탭 활성화
+      tabs.forEach(tab => {
+        tab.classList.remove('active');
+        if (tab.dataset.category === category) {
+          tab.classList.add('active');
+        }
+      });
+      
+      // 아이템 필터링
+      items.forEach(item => {
+        if (category === 'all' || item.dataset.category === category) {
+          item.style.display = 'block';
+        } else {
+          item.style.display = 'none';
+        }
+      });
+    }
+
+    let currentPurchase = null;
+
+    function buyItem(itemId, price) {
+      const progress = ProgressTracker.getProgress();
+      
+      // 코인 부족 확인
+      if (progress.player.coins < price) {
+        alert('코인이 부족합니다!');
+        return;
+      }
+      
+      // 구매 확인 모달 표시
+      currentPurchase = { itemId, price };
+      showPurchaseModal(itemId, price);
+    }
+
+    function showPurchaseModal(itemId, price) {
+      const modal = document.getElementById('purchase-modal');
+      const progress = ProgressTracker.getProgress();
+      
+      // 아이템 정보 표시 (간단히 처리)
+      document.getElementById('modal-item-name').textContent = itemId;
+      document.getElementById('modal-item-price').textContent = price;
+      document.getElementById('modal-coin-balance').textContent = progress.player.coins;
+      
+      modal.style.display = 'flex';
+      
+      // 구매 확인 버튼
+      document.getElementById('confirm-purchase-btn').onclick = () => {
+        confirmPurchase();
+      };
+    }
+
+    function closePurchaseModal() {
+      document.getElementById('purchase-modal').style.display = 'none';
+      currentPurchase = null;
+    }
+
+    function confirmPurchase() {
+      if (!currentPurchase) return;
+      
+      const { itemId, price } = currentPurchase;
+      
+      // 코인 차감
+      if (ProgressTracker.useCoins(price)) {
+        // 아이템 추가
+        ProgressTracker.addItem(itemId, 1);
+        
+        alert('구매 완료!');
+        closePurchaseModal();
+        loadShop();
+      } else {
+        alert('구매 실패!');
+      }
+    }
+
+    function buyDeal(dealId, price) {
+      // 특가 상품 구매
+      buyItem(dealId, price);
+    }
+  </script>
+</body>
+</html>
