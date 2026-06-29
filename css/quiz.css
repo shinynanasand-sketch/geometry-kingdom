@@ -1,0 +1,338 @@
+/* 퀴즈 페이지 스타일 */
+
+.quiz-page .header .container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+}
+
+.quiz-page .header h1 {
+  font-size: var(--font-xl);
+  flex: 1;
+  text-align: center;
+}
+
+.quiz-timer {
+  font-size: var(--font-lg);
+  font-weight: 700;
+  color: var(--primary-color);
+  min-width: 4rem;
+  text-align: right;
+}
+
+.quiz-progress {
+  margin-bottom: var(--spacing-lg);
+}
+
+.quiz-progress .progress-info {
+  margin-bottom: var(--spacing-sm);
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.quiz-container {
+  background: var(--bg-primary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: var(--spacing-xl);
+}
+
+.question-section {
+  margin-bottom: var(--spacing-xl);
+}
+
+.question-text {
+  font-size: var(--font-xl);
+  text-align: center;
+  margin-bottom: var(--spacing-lg);
+  line-height: 1.5;
+}
+
+.shape-display {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 160px;
+  margin: var(--spacing-lg) 0;
+}
+
+.shape-display .shape {
+  width: 120px;
+  height: 120px;
+  transition: transform 0.2s ease;
+}
+
+.shape.triangle {
+  clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+}
+
+.shape.square,
+.shape.rectangle {
+  border-radius: 4px;
+}
+
+.shape.rectangle {
+  width: 160px;
+  height: 100px;
+}
+
+.shape.circle {
+  border-radius: 50%;
+}
+
+.shape.cube {
+  border-radius: 8px;
+  box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.15);
+}
+
+.shape.sphere {
+  border-radius: 50%;
+  box-shadow: inset -12px -12px 24px rgba(0, 0, 0, 0.2);
+}
+
+.shape.cylinder {
+  width: 80px;
+  border-radius: 40px / 20px;
+}
+
+.shape.cone {
+  clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+  height: 140px;
+}
+
+.shape.pyramid {
+  clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+}
+
+.options-section {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.option-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md) var(--spacing-lg);
+  border: 2px solid var(--bg-secondary);
+  border-radius: var(--radius-md);
+  background: var(--bg-primary);
+  cursor: pointer;
+  font-size: var(--font-md);
+  text-align: left;
+  transition: border-color 0.2s, background 0.2s, transform 0.15s;
+}
+
+.option-btn:hover:not(:disabled) {
+  border-color: var(--primary-color);
+  transform: translateX(4px);
+}
+
+.option-btn:disabled {
+  cursor: default;
+}
+
+.option-btn.correct {
+  border-color: var(--success-color);
+  background: rgba(80, 200, 120, 0.15);
+}
+
+.option-btn.wrong {
+  border-color: var(--danger-color);
+  background: rgba(255, 107, 107, 0.15);
+}
+
+.option-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: var(--bg-secondary);
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.feedback {
+  padding: var(--spacing-md);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--spacing-md);
+  text-align: center;
+  font-weight: 600;
+}
+
+.feedback.correct {
+  background: rgba(80, 200, 120, 0.2);
+  color: #2d8a4e;
+}
+
+.feedback.wrong {
+  background: rgba(255, 107, 107, 0.2);
+  color: #c0392b;
+}
+
+.explanation,
+.hint {
+  padding: var(--spacing-md);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--spacing-md);
+}
+
+.explanation h4 {
+  margin-bottom: var(--spacing-sm);
+  color: var(--primary-color);
+}
+
+.character-dialogue {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+}
+
+.character-dialogue img {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--bg-secondary);
+  object-fit: cover;
+}
+
+.dialogue-bubble {
+  flex: 1;
+  padding: var(--spacing-md);
+  background: var(--primary-color);
+  color: var(--text-light);
+  border-radius: var(--radius-md);
+  border-bottom-left-radius: 4px;
+}
+
+.quiz-buttons {
+  display: flex;
+  gap: var(--spacing-md);
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* 결과 화면 */
+.result-container {
+  animation: fadeIn 0.4s ease;
+}
+
+.result-card {
+  background: var(--bg-primary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: var(--spacing-xl);
+  text-align: center;
+}
+
+.result-card h2 {
+  margin-bottom: var(--spacing-lg);
+  color: var(--primary-color);
+}
+
+.result-stars {
+  font-size: 2.5rem;
+  margin-bottom: var(--spacing-lg);
+  letter-spacing: 0.25rem;
+}
+
+.result-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.stat-item {
+  padding: var(--spacing-md);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+}
+
+.stat-label {
+  display: block;
+  font-size: var(--font-sm);
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.stat-value {
+  font-size: var(--font-xl);
+  font-weight: 700;
+}
+
+.stat-value.correct {
+  color: var(--success-color);
+}
+
+.stat-value.wrong {
+  color: var(--danger-color);
+}
+
+.result-message {
+  font-size: var(--font-lg);
+  font-weight: 600;
+  margin-bottom: var(--spacing-lg);
+}
+
+.rewards h3 {
+  margin-bottom: var(--spacing-md);
+}
+
+.reward-items {
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-lg);
+  flex-wrap: wrap;
+  margin-bottom: var(--spacing-xl);
+}
+
+.reward-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-md);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  min-width: 80px;
+}
+
+.reward-item .icon {
+  font-size: 1.5rem;
+}
+
+.reward-item .amount {
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+.result-buttons {
+  display: flex;
+  gap: var(--spacing-md);
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.reward-none {
+  color: var(--text-secondary);
+  font-size: var(--font-md);
+  padding: var(--spacing-md);
+}
+
+@media (min-width: 768px) {
+  .options-section {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .result-stats {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}

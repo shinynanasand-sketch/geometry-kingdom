@@ -34,23 +34,8 @@
     </div>
     
     <!-- 도형 정보 패널 -->
-    <div class="shape-info" id="shape-info" style="display: none;">
-      <div class="shape-info-content">
-        <h3 id="shape-name">삼각형</h3>
-        <div class="shape-properties">
-          <p><strong>변:</strong> <span id="shape-sides">3개</span></p>
-          <p><strong>꼭짓점:</strong> <span id="shape-vertices">3개</span></p>
-          <p><strong>각:</strong> <span id="shape-angles">3개</span></p>
-        </div>
-        <p class="shape-description" id="shape-description">
-          변이 3개인 도형입니다.
-        </p>
-        <div class="shape-examples">
-          <strong>예시:</strong>
-          <span id="shape-examples">삼각자, 표지판, 피라미드</span>
-        </div>
-      </div>
-      <button class="btn-close" onclick="closeShapeInfo()">✕</button>
+    <div class="shape-info" id="shape-info">
+      <!-- JavaScript로 동적 생성됨 -->
     </div>
     
     <!-- 컨트롤 버튼 -->
@@ -63,6 +48,9 @@
       </button>
       <button class="control-btn" id="btn-help" title="도움말" onclick="showHelp()">
         <span>❓</span>
+      </button>
+      <button class="control-btn" id="btn-quiz" title="퀴즈" onclick="arController && arController.startQuiz()">
+        <span>📝</span>
       </button>
     </div>
     
@@ -100,60 +88,24 @@
     
     <!-- 마커 1: Hiro (기본 테스트용) -->
     <a-marker preset="hiro" id="marker-hiro">
-      <a-entity id="shape-hiro" position="0 0 0">
-        <!-- 도형이 JavaScript로 동적 생성됨 -->
-      </a-entity>
+      <!-- 도형이 JavaScript로 동적 생성됨 -->
     </a-marker>
     
     <!-- 마커 2: Kanji -->
     <a-marker preset="kanji" id="marker-kanji">
-      <a-entity id="shape-kanji" position="0 0 0">
-        <!-- 도형이 JavaScript로 동적 생성됨 -->
-      </a-entity>
+      <!-- 도형이 JavaScript로 동적 생성됨 -->
     </a-marker>
     
-    <!-- 커스텀 마커 (레벨별) -->
-    <!-- 레벨 1 마커 -->
+    <!-- 마커 3: Letter A (원 등 추가 도형) -->
+    <a-marker preset="letterA" id="marker-letterA">
+      <!-- 도형이 JavaScript로 동적 생성됨 -->
+    </a-marker>
+    
+    <!-- 커스텀 마커 (레벨별) - 나중에 마커 파일 생성 후 활성화 -->
+    <!-- 
     <a-marker type="pattern" url="assets/markers/level1-marker.patt" id="marker-level1">
-      <a-entity id="shape-level1" position="0 0 0">
-        <!-- 도형이 JavaScript로 동적 생성됨 -->
-      </a-entity>
     </a-marker>
-    
-    <!-- 레벨 2 마커 -->
-    <a-marker type="pattern" url="assets/markers/level2-marker.patt" id="marker-level2">
-      <a-entity id="shape-level2" position="0 0 0">
-        <!-- 도형이 JavaScript로 동적 생성됨 -->
-      </a-entity>
-    </a-marker>
-    
-    <!-- 레벨 3 마커 -->
-    <a-marker type="pattern" url="assets/markers/level3-marker.patt" id="marker-level3">
-      <a-entity id="shape-level3" position="0 0 0">
-        <!-- 도형이 JavaScript로 동적 생성됨 -->
-      </a-entity>
-    </a-marker>
-    
-    <!-- 레벨 4 마커 -->
-    <a-marker type="pattern" url="assets/markers/level4-marker.patt" id="marker-level4">
-      <a-entity id="shape-level4" position="0 0 0">
-        <!-- 도형이 JavaScript로 동적 생성됨 -->
-      </a-entity>
-    </a-marker>
-    
-    <!-- 레벨 5 마커 -->
-    <a-marker type="pattern" url="assets/markers/level5-marker.patt" id="marker-level5">
-      <a-entity id="shape-level5" position="0 0 0">
-        <!-- 도형이 JavaScript로 동적 생성됨 -->
-      </a-entity>
-    </a-marker>
-    
-    <!-- 레벨 6 마커 -->
-    <a-marker type="pattern" url="assets/markers/level6-marker.patt" id="marker-level6">
-      <a-entity id="shape-level6" position="0 0 0">
-        <!-- 도형이 JavaScript로 동적 생성됨 -->
-      </a-entity>
-    </a-marker>
+    -->
   </a-scene>
 
   <!-- JavaScript -->
@@ -165,15 +117,15 @@
     // UI 함수들
     function toggleShapeInfo() {
       const infoPanel = document.getElementById('shape-info');
-      if (infoPanel.style.display === 'none') {
-        infoPanel.style.display = 'block';
+      if (infoPanel.classList.contains('visible')) {
+        infoPanel.classList.remove('visible');
       } else {
-        infoPanel.style.display = 'none';
+        infoPanel.classList.add('visible');
       }
     }
     
     function closeShapeInfo() {
-      document.getElementById('shape-info').style.display = 'none';
+      document.getElementById('shape-info').classList.remove('visible');
     }
     
     function showHelp() {

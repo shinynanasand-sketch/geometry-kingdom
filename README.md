@@ -119,8 +119,8 @@
 ### 1. 저장소 클론
 
 ```bash
-git clone https://github.com/nanasand/math-ar-learning.git
-cd math-ar-learning
+git clone https://github.com/shinynanasand-sketch/geometry-kingdom.git
+cd geometry-kingdom
 ```
 
 ### 2. 로컬 서버 실행
@@ -377,7 +377,7 @@ GitHub에서 Pull Request 생성
 ```
 MIT License
 
-Copyright (c) 2026 nanasand
+Copyright (c) 2026 shinynanasand-sketch
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -404,7 +404,7 @@ SOFTWARE.
 
 프로젝트에 대한 질문이나 제안이 있으신가요?
 
-- **GitHub Issues**: [이슈 등록](https://github.com/nanasand/math-ar-learning/issues)
+- **GitHub Issues**: [이슈 등록](https://github.com/shinynanasand-sketch/geometry-kingdom/issues)
 - **Email**: contact@example.com
 - **Website**: https://example.com
 

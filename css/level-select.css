@@ -1,0 +1,138 @@
+/* 레벨 선택 화면 */
+
+.welcome {
+  text-align: center;
+  padding: var(--spacing-xl) 0;
+  margin-bottom: var(--spacing-lg);
+}
+
+.welcome h2 {
+  font-size: var(--font-xxl);
+  margin-bottom: var(--spacing-sm);
+  color: var(--primary-color);
+}
+
+.welcome p {
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.levels h3 {
+  font-size: var(--font-xl);
+  margin-bottom: var(--spacing-lg);
+  color: var(--text-primary);
+}
+
+.level-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-xxl);
+}
+
+.level-card {
+  background: var(--bg-primary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: var(--spacing-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+}
+
+.level-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+.level-icon {
+  font-size: 2rem;
+}
+
+.level-info h4 {
+  font-size: var(--font-lg);
+  color: var(--primary-color);
+  margin-bottom: var(--spacing-xs);
+}
+
+.level-name {
+  font-weight: 600;
+  margin-bottom: var(--spacing-xs);
+}
+
+.level-desc,
+.level-grade {
+  font-size: var(--font-sm);
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.level-progress {
+  margin-top: var(--spacing-sm);
+}
+
+.level-progress .stars {
+  display: flex;
+  gap: var(--spacing-xs);
+  margin-bottom: var(--spacing-xs);
+}
+
+.level-progress .score {
+  font-size: var(--font-sm);
+  color: var(--text-secondary);
+}
+
+.level-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-top: auto;
+}
+
+.level-actions .btn {
+  flex: 1;
+  text-align: center;
+}
+
+.special-section {
+  margin-top: var(--spacing-xxl);
+}
+
+.special-section h3 {
+  margin-bottom: var(--spacing-lg);
+}
+
+.special-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--spacing-lg);
+}
+
+.special-card,
+.game-card {
+  background: linear-gradient(135deg, var(--primary-color), #667eea);
+  color: var(--text-light);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-xl);
+  text-align: center;
+  box-shadow: var(--shadow-md);
+  transition: transform 0.2s ease;
+}
+
+.special-card:hover,
+.game-card:hover {
+  transform: scale(1.02);
+}
+
+.special-card h4,
+.game-card h4 {
+  font-size: var(--font-xl);
+  margin-bottom: var(--spacing-sm);
+}
+
+.special-card p,
+.game-card p {
+  opacity: 0.9;
+  margin-bottom: var(--spacing-md);
+}

@@ -1,0 +1,47 @@
+/* 반응형 레이아웃 */
+
+@media (max-width: 767px) {
+  .header .container {
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    text-align: center;
+  }
+
+  .nav-list {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .nav-item .text {
+    display: none;
+  }
+
+  .level-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ar-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .shape-selector {
+    max-width: 100%;
+  }
+
+  .ar-controls {
+    flex-wrap: wrap;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .level-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .level-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}

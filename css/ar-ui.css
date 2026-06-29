@@ -1,0 +1,505 @@
+/**
+ * AR UI 오버레이 스타일
+ * AR User Interface Styles
+ */
+
+/* AR 페이지 기본 설정 */
+.ar-page {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+/* AR 오버레이 */
+.ar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1000;
+}
+
+.ar-overlay > * {
+  pointer-events: auto;
+}
+
+/* AR 헤더 */
+.ar-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 15px 20px;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.7), transparent);
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  z-index: 1001;
+}
+
+.btn-back {
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: 8px;
+  padding: 10px 15px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn-back:hover {
+  background: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.ar-info {
+  flex: 1;
+  color: white;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.ar-info h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.ar-info p {
+  margin: 5px 0 0;
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+/* 도형 정보 패널 */
+.shape-info {
+  position: absolute;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100%);
+  width: 90%;
+  max-width: 400px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  z-index: 1002;
+}
+
+.shape-info.visible {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+
+.shape-info-content h2 {
+  margin: 0 0 5px;
+  font-size: 24px;
+  color: #333;
+}
+
+.shape-name-en {
+  color: #666;
+  font-size: 14px;
+  margin: 0 0 15px;
+  font-style: italic;
+}
+
+.shape-properties {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 12px;
+  margin: 15px 0;
+}
+
+.shape-properties p {
+  margin: 8px 0;
+  font-size: 15px;
+  color: #495057;
+}
+
+.shape-properties strong {
+  color: #212529;
+}
+
+.shape-description {
+  font-size: 15px;
+  line-height: 1.6;
+  color: #495057;
+  margin: 15px 0;
+}
+
+.btn-close {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: #f1f3f5;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  font-size: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-close:hover {
+  background: #e9ecef;
+  transform: rotate(90deg);
+}
+
+/* AR 컨트롤 버튼 */
+.ar-controls {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 15px;
+  z-index: 1001;
+}
+
+.control-btn {
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: 50%;
+  width: 56px;
+  height: 56px;
+  font-size: 24px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.control-btn:hover {
+  background: #fff;
+  transform: translateY(-4px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+}
+
+.control-btn:active {
+  transform: translateY(-2px);
+}
+
+/* 마커 감지 상태 */
+.marker-status {
+  position: absolute;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-size: 14px;
+  z-index: 1001;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.marker-status.found {
+  background: rgba(76, 175, 80, 0.9);
+  animation: none;
+}
+
+/* 도움말 모달 */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal-content {
+  background: white;
+  border-radius: 16px;
+  padding: 30px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal-content h3 {
+  margin: 0 0 20px;
+  font-size: 24px;
+  color: #333;
+}
+
+.modal-content ol {
+  margin: 20px 0;
+  padding-left: 20px;
+}
+
+.modal-content li {
+  margin: 10px 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #495057;
+}
+
+.modal-content p {
+  margin: 15px 0;
+  font-size: 14px;
+  color: #666;
+  background: #fff3cd;
+  padding: 10px;
+  border-radius: 8px;
+  border-left: 4px solid #ffc107;
+}
+
+.btn {
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+/* 환영 메시지 */
+.welcome-message {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 16px;
+  padding: 30px;
+  text-align: center;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  z-index: 1500;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.welcome-message.visible {
+  opacity: 1;
+}
+
+.welcome-message h2 {
+  margin: 0 0 15px;
+  font-size: 28px;
+  color: #333;
+}
+
+.welcome-message p {
+  margin: 10px 0;
+  font-size: 16px;
+  color: #666;
+}
+
+/* 에러 패널 */
+.error-panel {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  border-radius: 16px;
+  padding: 30px;
+  text-align: center;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  z-index: 1500;
+  max-width: 400px;
+  width: 90%;
+}
+
+.error-content h3 {
+  margin: 0 0 15px;
+  font-size: 24px;
+  color: #dc3545;
+}
+
+.error-content p {
+  margin: 15px 0;
+  font-size: 16px;
+  color: #666;
+}
+
+.error-content button {
+  margin-top: 20px;
+}
+
+/* 힌트 패널 */
+.hint-panel {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 16px;
+  padding: 25px;
+  max-width: 350px;
+  width: 90%;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  z-index: 1500;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.hint-panel.visible {
+  opacity: 1;
+}
+
+.hint-content h3 {
+  margin: 0 0 15px;
+  font-size: 22px;
+  color: #333;
+}
+
+.hint-content p {
+  margin: 10px 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #495057;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .ar-header {
+    padding: 10px 15px;
+  }
+
+  .ar-info h2 {
+    font-size: 18px;
+  }
+
+  .ar-info p {
+    font-size: 13px;
+  }
+
+  .shape-info {
+    bottom: 80px;
+    padding: 15px;
+  }
+
+  .shape-info-content h2 {
+    font-size: 20px;
+  }
+
+  .control-btn {
+    width: 48px;
+    height: 48px;
+    font-size: 20px;
+  }
+
+  .ar-controls {
+    gap: 10px;
+  }
+
+  .modal-content {
+    padding: 20px;
+  }
+
+  .modal-content h3 {
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .ar-header {
+    padding: 8px 10px;
+  }
+
+  .btn-back {
+    padding: 8px 12px;
+    font-size: 14px;
+  }
+
+  .ar-info h2 {
+    font-size: 16px;
+  }
+
+  .shape-info {
+    width: 95%;
+    padding: 12px;
+  }
+
+  .control-btn {
+    width: 44px;
+    height: 44px;
+    font-size: 18px;
+  }
+}
+
+/* A-Frame 씬 스타일 */
+a-scene {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
+/* 로딩 화면 숨기기 */
+.a-loader-title {
+  display: none !important;
+}
+
+/* AR.js 디버그 UI 숨기기 */
+.arjs-loader {
+  display: none !important;
+}

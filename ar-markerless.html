@@ -168,94 +168,35 @@
 
   <!-- JavaScript -->
   <script src="js/utils.js"></script>
+  <script src="js/progress-tracker.js"></script>
   <script src="js/geometry-shapes.js"></script>
   <script src="js/shape-builder.js"></script>
   <script src="js/ar-markerless.js"></script>
   
   <script>
-    // 현재 선택된 도형
-    let selectedShapeType = 'cube';
-    let currentMode = 'view'; // 'view' or 'create'
-    
-    // URL 파라미터 확인
+    // URL 파라미터 확인 (창작 모드)
     const urlParams = new URLSearchParams(window.location.search);
     const mode = urlParams.get('mode');
-    const level = urlParams.get('level');
-    
+
     if (mode === 'create') {
-      currentMode = 'create';
       document.getElementById('create-mode').style.display = 'block';
       document.getElementById('shape-selector').style.display = 'none';
     }
-    
-    // UI 함수들
-    function selectShape(shapeType) {
-      selectedShapeType = shapeType;
-      
-      // 버튼 활성화 표시
-      document.querySelectorAll('.shape-btn').forEach(btn => {
-        btn.classList.remove('active');
-      });
-      document.querySelector(`[data-shape="${shapeType}"]`).classList.add('active');
-    }
-    
-    function toggleShapeInfo() {
-      const infoPanel = document.getElementById('shape-info');
-      if (infoPanel.style.display === 'none') {
-        infoPanel.style.display = 'block';
-      } else {
-        infoPanel.style.display = 'none';
-      }
-    }
-    
-    function closeShapeInfo() {
-      document.getElementById('shape-info').style.display = 'none';
-    }
-    
-    function toggleRotation() {
-      // AR 컨트롤러에서 처리
-      console.log('Toggle rotation');
-    }
-    
-    function toggleScale() {
-      // AR 컨트롤러에서 처리
-      console.log('Toggle scale');
-    }
-    
-    function deleteShape() {
-      // AR 컨트롤러에서 처리
-      console.log('Delete shape');
-    }
-    
+
     function showHelp() {
       document.getElementById('help-modal').style.display = 'flex';
     }
-    
+
     function closeHelp() {
       document.getElementById('help-modal').style.display = 'none';
     }
-    
-    // 도형 창작 모드 함수들
-    function addPart() {
-      const partType = document.getElementById('part-select').value;
-      console.log('Add part:', partType);
-      // shape-builder.js에서 처리
+
+    function closeShapeInfo() {
+      document.getElementById('shape-info').style.display = 'none';
     }
-    
-    function validateShape() {
-      console.log('Validate shape');
-      // shape-builder.js에서 오일러 공식 검증
-      document.getElementById('validation-result').style.display = 'block';
-    }
-    
-    // 페이지 로드 시 도움말 표시
+
     window.addEventListener('DOMContentLoaded', () => {
-      setTimeout(() => {
-        showHelp();
-      }, 1000);
-      
-      // 첫 번째 도형 선택
-      selectShape('cube');
+      setTimeout(showHelp, 1000);
     });
   </script>
 </body>
