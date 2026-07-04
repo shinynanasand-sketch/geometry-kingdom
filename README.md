@@ -4,6 +4,23 @@
 
 초등학생들이 AR(증강현실) 기술을 활용하여 기하학을 재미있게 학습할 수 있는 웹 애플리케이션입니다.
 
+## 🧪 학생 테스트 (온라인)
+
+설치 없이 브라우저에서 바로 체험할 수 있습니다.
+
+**메인:** https://shinynanasand-sketch.github.io/geometry-kingdom/
+
+| 바로가기 | URL |
+|----------|-----|
+| 홈 | https://shinynanasand-sketch.github.io/geometry-kingdom/ |
+| 레벨 1 | https://shinynanasand-sketch.github.io/geometry-kingdom/ar-marker.html?level=1 |
+| 레벨 2 | https://shinynanasand-sketch.github.io/geometry-kingdom/ar-marker.html?level=2 |
+| 레벨 3 | https://shinynanasand-sketch.github.io/geometry-kingdom/ar-markerless.html?level=3 |
+| 레벨 4 | https://shinynanasand-sketch.github.io/geometry-kingdom/ar-markerless.html?level=4 |
+| 퀴즈 (레벨1) | https://shinynanasand-sketch.github.io/geometry-kingdom/quiz.html?level=1 |
+
+자세한 안내는 [docs/STUDENT_TEST.md](docs/STUDENT_TEST.md)를 참고하세요.
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![HTML5](https://img.shields.io/badge/HTML5-E34F26?logo=html5&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/HTML)
 [![CSS3](https://img.shields.io/badge/CSS3-1572B6?logo=css3&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/CSS)
