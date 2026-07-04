@@ -49,6 +49,12 @@ class GeometryShapes {
       case 'pyramid':
         entity = this.createPyramid(color, size);
         break;
+      case 'box':
+        entity = this.createBox(color, size);
+        break;
+      case 'prism':
+        entity = this.createPrism(color, size);
+        break;
       default:
         console.error(`Unknown shape type: ${type}`);
         return null;
@@ -261,6 +267,53 @@ class GeometryShapes {
   }
 
   /**
+   * 직육면체 생성 (3D)
+   */
+  static createBox(color, size) {
+    const entity = document.createElement('a-entity');
+
+    entity.setAttribute('geometry', {
+      primitive: 'box',
+      width: size * 1.5,
+      height: size * 0.8,
+      depth: size
+    });
+
+    entity.setAttribute('material', {
+      color: color,
+      shader: 'standard',
+      metalness: 0.2,
+      roughness: 0.8
+    });
+
+    this.addEdges(entity, size);
+    return entity;
+  }
+
+  /**
+   * 육각기둥 생성 (3D)
+   */
+  static createPrism(color, size) {
+    const entity = document.createElement('a-entity');
+
+    entity.setAttribute('geometry', {
+      primitive: 'cylinder',
+      radius: size * 0.45,
+      height: size,
+      segmentsRadial: 6
+    });
+
+    entity.setAttribute('material', {
+      color: color,
+      shader: 'standard',
+      metalness: 0.2,
+      roughness: 0.8
+    });
+
+    return entity;
+  }
+
+  /**
    * 피라미드(사각뿔) 생성 (3D)
    */
   static createPyramid(color, size) {
@@ -322,9 +375,18 @@ class GeometryShapes {
    * 모서리 강조 (3D 도형용)
    */
   static addEdges(entity, size) {
-    // 모서리 라인 추가 (선택사항)
-    // A-Frame에서는 기본적으로 지원하지 않으므로 생략
-    // 필요시 커스텀 컴포넌트로 구현
+    const wireframe = document.createElement('a-entity');
+    wireframe.setAttribute('geometry', entity.getAttribute('geometry'));
+    wireframe.setAttribute('material', {
+      color: '#333',
+      wireframe: true,
+      shader: 'flat'
+    });
+    wireframe.setAttribute('scale', '1.002 1.002 1.002');
+    wireframe.classList.add('edge-highlight');
+    wireframe.setAttribute('visible', 'false');
+    entity.appendChild(wireframe);
+    entity.edgeHighlight = wireframe;
   }
 
   /**
@@ -355,6 +417,7 @@ class GeometryShapes {
         sides: 3,
         vertices: 3,
         description: '변이 3개인 도형',
+        areaFormula: '밑변 × 높이 ÷ 2',
         color: '#FF6B6B'
       },
       square: {
@@ -363,6 +426,7 @@ class GeometryShapes {
         sides: 4,
         vertices: 4,
         description: '네 변의 길이가 같고, 네 각이 모두 직각인 도형',
+        areaFormula: '한 변 × 한 변',
         color: '#4A90E2'
       },
       rectangle: {
@@ -371,6 +435,7 @@ class GeometryShapes {
         sides: 4,
         vertices: 4,
         description: '네 각이 모두 직각인 도형',
+        areaFormula: '가로 × 세로',
         color: '#51CF66'
       },
       circle: {
@@ -379,6 +444,7 @@ class GeometryShapes {
         sides: 0,
         vertices: 0,
         description: '한 점에서 같은 거리에 있는 점들의 모임',
+        areaFormula: 'π × 반지름²',
         color: '#FFD43B'
       },
       cube: {
@@ -424,11 +490,264 @@ class GeometryShapes {
         edges: 8,
         vertices: 5,
         description: '사각형 밑면과 4개의 삼각형 면으로 이루어진 입체 도형',
+        volumeFormula: '⅓ × 밑넓이 × 높이',
         color: '#FFA94D'
+      },
+      box: {
+        name: '직육면체',
+        nameEn: 'Rectangular Prism',
+        faces: 6,
+        edges: 12,
+        vertices: 8,
+        description: '6개의 직사각형 면으로 이루어진 입체 도형',
+        volumeFormula: '가로 × 세로 × 높이',
+        color: '#51CF66'
+      },
+      prism: {
+        name: '육각기둥',
+        nameEn: 'Hexagonal Prism',
+        faces: 8,
+        edges: 18,
+        vertices: 12,
+        description: '육각형 밑면과 직사각형 옆면으로 이루어진 각기둥',
+        volumeFormula: '밑넓이 × 높이',
+        color: '#339AF0'
       }
     };
 
-    return shapeData[type] || null;
+    const info = shapeData[type];
+    if (info && !info.volumeFormula) {
+      const formulas = {
+        cube: 'a³',
+        sphere: '⁴⁄₃πr³',
+        cylinder: 'πr²h',
+        cone: '⅓πr²h'
+      };
+      info.volumeFormula = formulas[type] || 'N/A';
+    }
+
+    return info || null;
+  }
+
+  /**
+   * 면/모서리/꼭짓점 강조
+   */
+  static highlightProperties(entity, mode, shapeType) {
+    this.clearHighlights(entity);
+
+    if (!entity || mode === 'none') return;
+
+    const highlightContainer = document.createElement('a-entity');
+    highlightContainer.classList.add('highlight-overlay');
+    entity.appendChild(highlightContainer);
+    entity.highlightOverlay = highlightContainer;
+
+    const size = 0.5;
+    const markerColor = { face: '#FFD43B', edge: '#FF6B6B', vertex: '#4ECDC4' };
+
+    if (mode === 'vertices') {
+      const offsets = this.getVertexOffsets(shapeType, size);
+      offsets.forEach((pos) => {
+        const marker = document.createElement('a-sphere');
+        marker.setAttribute('radius', 0.06);
+        marker.setAttribute('color', markerColor.vertex);
+        marker.setAttribute('position', `${pos.x} ${pos.y} ${pos.z}`);
+        highlightContainer.appendChild(marker);
+      });
+    }
+
+    if (mode === 'edges' && entity.edgeHighlight) {
+      entity.edgeHighlight.setAttribute('visible', 'true');
+    }
+
+    if (mode === 'faces') {
+      const faces = this.getFacePlanes(shapeType, size);
+      faces.forEach((face) => {
+        const plane = document.createElement('a-plane');
+        plane.setAttribute('width', face.width);
+        plane.setAttribute('height', face.height);
+        plane.setAttribute('position', `${face.pos.x} ${face.pos.y} ${face.pos.z}`);
+        plane.setAttribute('rotation', face.rotation);
+        plane.setAttribute('material', {
+          color: markerColor.face,
+          opacity: 0.35,
+          transparent: true,
+          side: 'double'
+        });
+        highlightContainer.appendChild(plane);
+      });
+    }
+  }
+
+  static clearHighlights(entity) {
+    if (entity?.highlightOverlay) {
+      entity.removeChild(entity.highlightOverlay);
+      entity.highlightOverlay = null;
+    }
+    if (entity?.edgeHighlight) {
+      entity.edgeHighlight.setAttribute('visible', 'false');
+    }
+  }
+
+  static getVertexOffsets(shapeType, size) {
+    const h = size * 0.5;
+    const offsets = {
+      cube: [
+        { x: -h, y: -h, z: -h }, { x: h, y: -h, z: -h },
+        { x: -h, y: h, z: -h }, { x: h, y: h, z: -h },
+        { x: -h, y: -h, z: h }, { x: h, y: -h, z: h },
+        { x: -h, y: h, z: h }, { x: h, y: h, z: h }
+      ],
+      box: [
+        { x: -h * 1.5, y: -h * 0.8, z: -h }, { x: h * 1.5, y: -h * 0.8, z: -h },
+        { x: -h * 1.5, y: h * 0.8, z: -h }, { x: h * 1.5, y: h * 0.8, z: -h },
+        { x: -h * 1.5, y: -h * 0.8, z: h }, { x: h * 1.5, y: -h * 0.8, z: h },
+        { x: -h * 1.5, y: h * 0.8, z: h }, { x: h * 1.5, y: h * 0.8, z: h }
+      ],
+      pyramid: [
+        { x: -h, y: -h * 0.5, z: -h }, { x: h, y: -h * 0.5, z: -h },
+        { x: h, y: -h * 0.5, z: h }, { x: -h, y: -h * 0.5, z: h },
+        { x: 0, y: h * 0.5, z: 0 }
+      ],
+      cone: [{ x: 0, y: h * 0.5, z: 0 }, { x: 0, y: -h * 0.5, z: 0 }]
+    };
+    return offsets[shapeType] || [{ x: 0, y: h, z: 0 }, { x: 0, y: -h, z: 0 }];
+  }
+
+  static getFacePlanes(shapeType, size) {
+    const h = size * 0.5;
+    if (shapeType === 'cube' || shapeType === 'box') {
+      const w = shapeType === 'box' ? h * 1.5 : h;
+      const bh = shapeType === 'box' ? h * 0.8 : h;
+      return [
+        { width: w * 2, height: bh * 2, pos: { x: 0, y: 0, z: h }, rotation: '0 0 0' },
+        { width: w * 2, height: bh * 2, pos: { x: 0, y: 0, z: -h }, rotation: '0 180 0' },
+        { width: h * 2, height: bh * 2, pos: { x: w, y: 0, z: 0 }, rotation: '0 90 0' },
+        { width: h * 2, height: bh * 2, pos: { x: -w, y: 0, z: 0 }, rotation: '0 -90 0' },
+        { width: w * 2, height: h * 2, pos: { x: 0, y: bh, z: 0 }, rotation: '-90 0 0' },
+        { width: w * 2, height: h * 2, pos: { x: 0, y: -bh, z: 0 }, rotation: '90 0 0' }
+      ];
+    }
+    return [{ width: size, height: size, pos: { x: 0, y: 0, z: h }, rotation: '0 0 0' }];
+  }
+
+  /**
+   * 전개도 애니메이션 토글
+   */
+  static toggleUnfold(entity, shapeType, unfolded) {
+    if (!entity) return;
+
+    let unfoldGroup = entity.querySelector('.unfold-group');
+
+    if (!unfolded) {
+      if (unfoldGroup) {
+        unfoldGroup.setAttribute('animation', {
+          property: 'scale',
+          to: '0 0 0',
+          dur: 400,
+          easing: 'easeInQuad'
+        });
+        setTimeout(() => {
+          if (unfoldGroup.parentNode) unfoldGroup.parentNode.removeChild(unfoldGroup);
+        }, 400);
+      }
+      entity.setAttribute('visible', 'true');
+      return;
+    }
+
+    entity.setAttribute('visible', 'false');
+
+    unfoldGroup = document.createElement('a-entity');
+    unfoldGroup.classList.add('unfold-group');
+    entity.parentNode.appendChild(unfoldGroup);
+    unfoldGroup.setAttribute('position', entity.getAttribute('position'));
+    unfoldGroup.setAttribute('rotation', entity.getAttribute('rotation'));
+
+    const size = 0.5;
+    const faces = this.getUnfoldLayout(shapeType, size);
+    faces.forEach((face, i) => {
+      const plane = document.createElement('a-plane');
+      plane.setAttribute('width', face.width);
+      plane.setAttribute('height', face.height);
+      plane.setAttribute('position', `${face.start.x} ${face.start.y} ${face.start.z}`);
+      plane.setAttribute('rotation', face.rotation);
+      plane.setAttribute('material', {
+        color: face.color,
+        side: 'double',
+        shader: 'flat',
+        opacity: 0.9
+      });
+      plane.setAttribute('animation', {
+        property: 'position',
+        to: `${face.end.x} ${face.end.y} ${face.end.z}`,
+        dur: 1200,
+        delay: i * 150,
+        easing: 'easeOutElastic'
+      });
+      unfoldGroup.appendChild(plane);
+    });
+
+    entity.unfoldGroup = unfoldGroup;
+  }
+
+  static getUnfoldLayout(shapeType, size) {
+    const h = size;
+    const color = '#845EF7';
+
+    if (shapeType === 'cube' || shapeType === 'box') {
+      return [
+        { width: h, height: h, start: { x: 0, y: 0, z: 0 }, end: { x: 0, y: 0, z: 0 }, rotation: '0 0 0', color },
+        { width: h, height: h, start: { x: 0, y: 0, z: 0 }, end: { x: -h, y: 0, z: 0 }, rotation: '0 0 0', color: '#667eea' },
+        { width: h, height: h, start: { x: 0, y: 0, z: 0 }, end: { x: h, y: 0, z: 0 }, rotation: '0 0 0', color: '#764ba2' },
+        { width: h, height: h, start: { x: 0, y: 0, z: 0 }, end: { x: 0, y: h, z: 0 }, rotation: '0 0 0', color: '#4ECDC4' },
+        { width: h, height: h, start: { x: 0, y: 0, z: 0 }, end: { x: 0, y: -h, z: 0 }, rotation: '0 0 0', color: '#FF6B6B' },
+        { width: h, height: h, start: { x: 0, y: 0, z: 0 }, end: { x: 0, y: 0, z: -h }, rotation: '0 0 0', color: '#FFD43B' }
+      ];
+    }
+
+    if (shapeType === 'pyramid') {
+      return [
+        { width: h, height: h, start: { x: 0, y: 0, z: 0 }, end: { x: 0, y: 0, z: 0 }, rotation: '0 0 0', color: '#FFA94D' },
+        { width: h, height: h * 0.8, start: { x: 0, y: 0, z: 0 }, end: { x: -h * 0.6, y: h * 0.3, z: 0 }, rotation: '0 0 0', color: '#FF8787' },
+        { width: h, height: h * 0.8, start: { x: 0, y: 0, z: 0 }, end: { x: h * 0.6, y: h * 0.3, z: 0 }, rotation: '0 0 0', color: '#FF6B6B' },
+        { width: h, height: h * 0.8, start: { x: 0, y: 0, z: 0 }, end: { x: 0, y: h * 0.3, z: -h * 0.6 }, rotation: '0 0 0', color: '#FFD43B' },
+        { width: h, height: h * 0.8, start: { x: 0, y: 0, z: 0 }, end: { x: 0, y: h * 0.3, z: h * 0.6 }, rotation: '0 0 0', color: '#51CF66' }
+      ];
+    }
+
+    return [
+      { width: h, height: h, start: { x: 0, y: 0, z: 0 }, end: { x: 0, y: 0, z: 0 }, rotation: '0 0 0', color }
+    ];
+  }
+
+  /**
+   * 단면 보기 토글
+   */
+  static toggleCrossSection(entity, enabled) {
+    if (!entity) return;
+
+    let section = entity.querySelector('.cross-section');
+    if (!enabled) {
+      entity.setAttribute('material', 'opacity', 1);
+      entity.setAttribute('material', 'transparent', false);
+      if (section) section.setAttribute('visible', 'false');
+      return;
+    }
+
+    entity.setAttribute('material', 'opacity', 0.55);
+    entity.setAttribute('material', 'transparent', true);
+
+    if (!section) {
+      section = document.createElement('a-ring');
+      section.classList.add('cross-section');
+      section.setAttribute('radius-inner', 0.35);
+      section.setAttribute('radius-outer', 0.42);
+      section.setAttribute('rotation', '-90 0 0');
+      section.setAttribute('position', '0 0 0');
+      section.setAttribute('color', '#FF6B6B');
+      entity.appendChild(section);
+    }
+    section.setAttribute('visible', 'true');
   }
 
   /**

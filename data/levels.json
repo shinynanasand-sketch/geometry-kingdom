@@ -99,6 +99,12 @@
           "description": "6개의 정사각형 면으로 이루어진 입체 도형"
         },
         {
+          "type": "box",
+          "color": "#51CF66",
+          "name": "직육면체",
+          "description": "6개의 직사각형 면으로 이루어진 입체 도형"
+        },
+        {
           "type": "sphere",
           "color": "#FF6B6B",
           "marker": "kanji",
@@ -132,6 +138,12 @@
       "targetGrade": "5-6학년",
       "curriculum": ["6수03-08", "6수03-09", "6수03-10"],
       "shapes": [
+        {
+          "type": "prism",
+          "color": "#339AF0",
+          "name": "육각기둥",
+          "description": "육각형 밑면과 직사각형 옆면으로 이루어진 각기둥"
+        },
         {
           "type": "pyramid",
           "color": "#FFA94D",

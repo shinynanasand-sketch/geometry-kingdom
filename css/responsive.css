@@ -27,6 +27,36 @@
 
   .shape-selector {
     max-width: 100%;
+    top: auto;
+    bottom: 88px;
+    right: 8px;
+    left: 8px;
+  }
+
+  .shape-buttons {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .shape-btn {
+    flex: 1 1 45%;
+    min-width: 120px;
+  }
+
+  .preview-mode-btn {
+    top: 72px;
+    left: 8px;
+    font-size: 12px;
+    padding: 8px 10px;
+  }
+
+  .place-shape-btn {
+    top: auto;
+    bottom: 150px;
+    left: 8px;
+    right: 8px;
+    width: calc(100% - 16px);
+    text-align: center;
   }
 
   .ar-controls {
