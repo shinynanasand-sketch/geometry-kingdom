@@ -67,7 +67,7 @@ const ARShapeControls = {
     const type = entity.dataset?.shapeType || record?.type || controller.selectedShapeType;
     controller.selectedShapeType = type;
     this.updateInfo(type);
-    this.showInfoPanel();
+    // 정보 패널은 ℹ️ 버튼을 눌렀을 때만 표시
   },
 
   markSelected(entity) {
@@ -75,22 +75,12 @@ const ARShapeControls = {
 
     entity.setAttribute('data-selected', 'true');
 
-    let ring = entity.querySelector('.selection-ring');
-    if (!ring) {
-      ring = document.createElement('a-ring');
-      ring.classList.add('selection-ring');
-      ring.setAttribute('class', 'selection-ring');
-      ring.setAttribute('radius-inner', '0.55');
-      ring.setAttribute('radius-outer', '0.7');
-      ring.setAttribute('rotation', '-90 0 0');
-      ring.setAttribute('position', '0 0.03 0');
-      ring.setAttribute('color', '#FFD43B');
-      ring.setAttribute('material', 'shader: flat; opacity: 0.95; transparent: true; side: double');
-      entity.appendChild(ring);
-    }
-    ring.setAttribute('visible', 'true');
+    // 예전 선택 링(노란 반원)이 남아 있으면 제거
+    entity.querySelectorAll('.selection-ring, .sel-ring').forEach((ring) => {
+      if (ring.parentNode) ring.parentNode.removeChild(ring);
+    });
 
-    // 선택됨을 살짝 키워서 구분
+    // 선택됨: 살짝 키우기만 (링 표시 없음)
     const scale = entity.getAttribute('scale') || { x: 1, y: 1, z: 1 };
     const baseX = entity.dataset.baseScaleX
       ? parseFloat(entity.dataset.baseScaleX)
@@ -110,8 +100,9 @@ const ARShapeControls = {
     if (!entity) return;
     entity.removeAttribute('data-selected');
 
-    const ring = entity.querySelector('.selection-ring');
-    if (ring) ring.setAttribute('visible', 'false');
+    entity.querySelectorAll('.selection-ring, .sel-ring').forEach((ring) => {
+      if (ring.parentNode) ring.parentNode.removeChild(ring);
+    });
 
     if (entity.dataset.baseScaleX) {
       entity.setAttribute(
@@ -152,40 +143,216 @@ const ARShapeControls = {
     return true;
   },
 
+  /**
+   * 회전 모드 ON/OFF
+   * ON이면 마우스로 드래그해 선택한 도형을 회전
+   */
   toggleRotation(controller) {
-    if (!controller.currentShape) return;
+    if (!controller.currentShape) return false;
+
+    controller.currentShape.removeAttribute('animation');
     controller.rotationEnabled = !controller.rotationEnabled;
 
-    if (controller.rotationEnabled) {
-      controller.currentShape.setAttribute('animation', {
-        property: 'rotation',
-        to: '0 360 0',
-        loop: true,
-        dur: 8000,
-        easing: 'linear'
-      });
-    } else {
-      controller.currentShape.removeAttribute('animation');
-    }
-    document.getElementById('btn-rotate')?.classList.toggle('active', controller.rotationEnabled);
+    document.getElementById('btn-rotate')?.classList.toggle(
+      'active',
+      controller.rotationEnabled
+    );
+
+    this.bindDragRotate(controller);
+
+    // 회전 모드 동안 카메라 시점 조작 끄기 (드래그와 충돌 방지)
+    this.setLookControls(controller, !controller.rotationEnabled);
+    document.body.style.cursor = controller.rotationEnabled ? 'grab' : '';
+    document.body.classList.toggle('rotation-mode', controller.rotationEnabled);
+
+    return controller.rotationEnabled;
   },
 
-  toggleScale(controller) {
-    if (!controller.currentShape) return;
+  parseRotation(entity) {
+    const rot = entity.getAttribute('rotation');
+    if (!rot) return { x: 0, y: 0, z: 0 };
+    if (typeof rot === 'string') {
+      const p = rot.trim().split(/\s+/).map(Number);
+      return { x: p[0] || 0, y: p[1] || 0, z: p[2] || 0 };
+    }
+    return {
+      x: Number(rot.x) || 0,
+      y: Number(rot.y) || 0,
+      z: Number(rot.z) || 0
+    };
+  },
+
+  bindDragRotate(controller) {
+    if (controller._dragRotateBound) return;
+    controller._dragRotateBound = true;
+
+    let dragging = false;
+    let lastX = 0;
+    let lastY = 0;
+
+    const isUiTarget = (target) => {
+      if (!target || !target.closest) return false;
+      return !!target.closest(
+        'button, input, select, textarea, a, .shape-selector, .shape-panel, ' +
+          '.shape-btn, .control-btn, .btn-place, .btn-back, .modal, .camera-test-panel, ' +
+          '.preview-mode-btn, .place-shape-btn, .scale-controls, .info-panel, .ar-header, ' +
+          '.shape-info, .marker-status, .btn-camera-test'
+      );
+    };
+
+    const pointerPos = (e) => {
+      if (e.touches && e.touches[0]) {
+        return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      }
+      if (e.changedTouches && e.changedTouches[0]) {
+        return { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY };
+      }
+      if (typeof e.clientX === 'number') {
+        return { x: e.clientX, y: e.clientY };
+      }
+      return null;
+    };
+
+    controller._onRotDown = (e) => {
+      if (!controller.rotationEnabled || !controller.currentShape) return;
+      if (isUiTarget(e.target)) return;
+
+      const pos = pointerPos(e);
+      if (!pos) return;
+      dragging = true;
+      lastX = pos.x;
+      lastY = pos.y;
+      document.body.style.cursor = 'grabbing';
+      if (e.cancelable) e.preventDefault();
+    };
+
+    controller._onRotMove = (e) => {
+      if (!dragging || !controller.rotationEnabled || !controller.currentShape) return;
+      const pos = pointerPos(e);
+      if (!pos) return;
+
+      const dx = pos.x - lastX;
+      const dy = pos.y - lastY;
+      lastX = pos.x;
+      lastY = pos.y;
+      this.applyDragRotation(controller, dx, dy);
+      if (e.cancelable) e.preventDefault();
+    };
+
+    controller._onRotUp = () => {
+      if (!dragging) return;
+      dragging = false;
+      document.body.style.cursor = controller.rotationEnabled ? 'grab' : '';
+    };
+
+    // 캡처 단계에서 받아 look-controls보다 먼저 처리
+    const opts = { capture: true, passive: false };
+    window.addEventListener('pointerdown', controller._onRotDown, opts);
+    window.addEventListener('pointermove', controller._onRotMove, opts);
+    window.addEventListener('pointerup', controller._onRotUp, opts);
+    window.addEventListener('pointercancel', controller._onRotUp, opts);
+    // 구형 브라우저 / 터치 보조
+    window.addEventListener('mousedown', controller._onRotDown, true);
+    window.addEventListener('mousemove', controller._onRotMove, true);
+    window.addEventListener('mouseup', controller._onRotUp, true);
+    window.addEventListener('touchstart', controller._onRotDown, opts);
+    window.addEventListener('touchmove', controller._onRotMove, opts);
+    window.addEventListener('touchend', controller._onRotUp, true);
+  },
+
+  applyDragRotation(controller, dx, dy) {
     const entity = controller.currentShape;
-    const baseX = parseFloat(entity.dataset.baseScaleX || '1');
-    const baseY = parseFloat(entity.dataset.baseScaleY || '1');
-    const baseZ = parseFloat(entity.dataset.baseScaleZ || '1');
-    const next = Math.min(baseX + 0.2, 2);
+    if (!entity) return;
+
+    const type = entity.dataset?.shapeType || controller.selectedShapeType || '';
+    const flat2d = [
+      'triangle', 'rightTriangle', 'isoscelesTriangle', 'quad',
+      'square', 'rectangle', 'rhombus', 'parallelogram', 'trapezoid', 'circle'
+    ];
+    const rot = this.parseRotation(entity);
+    const speed = 0.7;
+
+    let x = rot.x;
+    let y = rot.y;
+    let z = rot.z;
+
+    // 좌우 드래그 → Y축, 상하 드래그 → X축 (평면 도형은 Y만)
+    y -= dx * speed;
+    if (!flat2d.includes(type)) {
+      x += dy * speed;
+    }
+
+    entity.setAttribute('rotation', `${x} ${y} ${z}`);
+
+    // A-Frame object3D에도 즉시 반영 (레벨 1-2 평면 도형 포함)
+    if (entity.object3D) {
+      const deg = Math.PI / 180;
+      entity.object3D.rotation.set(x * deg, y * deg, z * deg);
+      entity.object3D.updateMatrixWorld(true);
+    }
+  },
+
+  setLookControls(controller, enabled) {
+    const scene = controller.scene || document.querySelector('a-scene');
+    if (!scene) return;
+    scene.querySelectorAll('[camera], #main-camera, #cam').forEach((cam) => {
+      if (enabled) {
+        cam.setAttribute(
+          'look-controls',
+          'enabled: true; magicWindowTrackingEnabled: false; pointerLockEnabled: false'
+        );
+      } else {
+        cam.setAttribute('look-controls', 'enabled: false');
+      }
+    });
+  },
+
+  MIN_SCALE: 0.3,
+  MAX_SCALE: 2.0,
+  SCALE_STEP: 0.2,
+
+  /** 크기 조절 (+ / -). delta > 0 이면 확대, < 0 이면 축소 */
+  scaleBy(controller, delta) {
+    if (!controller.currentShape) return null;
+
+    const entity = controller.currentShape;
+    if (!entity.dataset.baseScaleX) {
+      const scale = entity.getAttribute('scale') || { x: 1, y: 1, z: 1 };
+      const selected = entity.getAttribute('data-selected') === 'true';
+      const factor = selected ? 1.08 : 1;
+      entity.dataset.baseScaleX = String((scale.x || 1) / factor);
+      entity.dataset.baseScaleY = String((scale.y || 1) / factor);
+      entity.dataset.baseScaleZ = String((scale.z || 1) / factor);
+    }
+
+    const step = delta >= 0 ? this.SCALE_STEP : -this.SCALE_STEP;
+    const next = Math.min(
+      this.MAX_SCALE,
+      Math.max(this.MIN_SCALE, parseFloat(entity.dataset.baseScaleX) + step)
+    );
+
     entity.dataset.baseScaleX = String(next);
-    entity.dataset.baseScaleY = String(Math.min(baseY + 0.2, 2));
-    entity.dataset.baseScaleZ = String(Math.min(baseZ + 0.2, 2));
+    entity.dataset.baseScaleY = String(next);
+    entity.dataset.baseScaleZ = String(next);
+
     const selected = entity.getAttribute('data-selected') === 'true';
     const factor = selected ? 1.08 : 1;
-    entity.setAttribute(
-      'scale',
-      `${next * factor} ${parseFloat(entity.dataset.baseScaleY) * factor} ${parseFloat(entity.dataset.baseScaleZ) * factor}`
-    );
+    entity.setAttribute('scale', `${next * factor} ${next * factor} ${next * factor}`);
+
+    return Math.round(next * 100) / 100;
+  },
+
+  scaleUp(controller) {
+    return this.scaleBy(controller, 1);
+  },
+
+  scaleDown(controller) {
+    return this.scaleBy(controller, -1);
+  },
+
+  /** @deprecated scaleUp 사용 */
+  toggleScale(controller) {
+    return this.scaleUp(controller);
   },
 
   toggleHighlight(controller) {

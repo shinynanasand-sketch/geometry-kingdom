@@ -8,7 +8,7 @@
 
 class QuizSystem {
   constructor(levelId = 1) {
-    this.levelId = levelId;
+    this.levelId = QuizSystem.resolveLevelId(levelId);
     this.levelData = null;
     this.questions = [];
     this.currentQuestionIndex = 0;
@@ -21,32 +21,60 @@ class QuizSystem {
     this.isAnswered = false;
   }
 
+  /** URL 또는 인자에서 레벨 번호(1~7) 확정 */
+  static resolveLevelId(levelId) {
+    const fromArg = parseInt(levelId, 10);
+    if (fromArg >= 1 && fromArg <= 7) return fromArg;
+
+    const params = new URLSearchParams(window.location.search);
+    const fromUrl = parseInt(params.get('level'), 10);
+    if (fromUrl >= 1 && fromUrl <= 7) return fromUrl;
+
+    return 1;
+  }
+
   /**
    * 초기화
    */
   async init() {
     try {
-      console.log('[Quiz System] Initializing...');
-      
-      // 레벨 데이터 로드
+      // URL을 다시 읽어 레벨 확정 (캐시·잘못된 기본값 방지)
+      this.levelId = QuizSystem.resolveLevelId(this.levelId);
+      console.log('[Quiz System] Initializing level', this.levelId);
+
       await this.loadLevelData();
-      
-      // 문제 로드
       await this.loadQuestions();
-      
-      // 타이머 시작
+
+      this.updateLevelHeader();
       this.startTimer();
-      
-      // 첫 번째 문제 표시
       this.displayQuestion();
-      
-      // 시작 시간 기록
       this.startTime = Date.now();
-      
-      console.log('[Quiz System] Initialized successfully');
+
+      console.log(
+        '[Quiz System] Ready — level',
+        this.levelId,
+        'first question:',
+        this.questions[0]?.id,
+        this.questions[0]?.question
+      );
     } catch (error) {
       console.error('[Quiz System] Initialization failed:', error);
-      alert('퀴즈를 불러오는데 실패했습니다.');
+      alert('퀴즈를 불러오는데 실패했습니다: ' + error.message);
+    }
+  }
+
+  updateLevelHeader() {
+    const titleEl = document.getElementById('quiz-level-title');
+    const name = this.levelData?.name || `레벨 ${this.levelId}`;
+    if (titleEl) {
+      titleEl.textContent = `Lv.${this.levelId} ${name}`;
+    }
+    document.title = `퀴즈 Lv.${this.levelId} - 도형 왕국`;
+
+    const badge = document.getElementById('quiz-level-badge');
+    if (badge) {
+      badge.textContent = `레벨 ${this.levelId} 전용 퀴즈`;
+      badge.style.display = 'inline-block';
     }
   }
 
@@ -54,56 +82,61 @@ class QuizSystem {
    * 레벨 데이터 로드
    */
   async loadLevelData() {
-    try {
-      const response = await fetch('data/levels.json');
-      const data = await response.json();
-      this.levelData = data.levels.find(level => level.id === this.levelId);
-      
-      if (!this.levelData) {
-        throw new Error(`Level ${this.levelId} not found`);
-      }
-      
-      // 타이머 설정
-      this.timeLeft = this.levelData.timeLimit || 300;
-      
-      if (this.levelData) {
-        const titleEl = document.getElementById('quiz-level-title');
-        if (titleEl) {
-          titleEl.textContent = `Lv.${this.levelData.id} ${this.levelData.name}`;
-        }
-        document.title = `퀴즈 Lv.${this.levelData.id} - 도형 왕국`;
-      }
+    const defaults = {
+      1: { id: 1, name: '평면 도형 기초', timeLimit: 300, quizCount: 10, requiredScore: 60, rewards: { coins: 50, xp: 100 } },
+      2: { id: 2, name: '평면 도형 심화', timeLimit: 450, quizCount: 12, requiredScore: 70, rewards: { coins: 75, xp: 150 } },
+      3: { id: 3, name: '입체 도형 기초', timeLimit: 450, quizCount: 10, requiredScore: 70, rewards: { coins: 100, xp: 200 } },
+      4: { id: 4, name: '입체 도형 심화', timeLimit: 600, quizCount: 10, requiredScore: 75, rewards: { coins: 150, xp: 300 } },
+      5: { id: 5, name: '넓이와 부피', timeLimit: 600, quizCount: 10, requiredScore: 75, rewards: { coins: 200, xp: 400 } },
+      6: { id: 6, name: '종합 챌린지', timeLimit: 900, quizCount: 10, requiredScore: 80, rewards: { coins: 300, xp: 500 } },
+      7: { id: 7, name: '주령구 도형 공방', timeLimit: 600, quizCount: 8, requiredScore: 80, rewards: { coins: 400, xp: 600 } }
+    };
 
-      console.log('[Quiz System] Level data loaded:', this.levelData.name);
+    try {
+      const response = await fetch(`data/levels.json?v=${Date.now()}`, { cache: 'no-store' });
+      if (!response.ok) throw new Error('levels.json HTTP ' + response.status);
+      const data = await response.json();
+      this.levelData = data.levels.find((level) => Number(level.id) === Number(this.levelId));
     } catch (error) {
-      console.error('[Quiz System] Failed to load level data:', error);
-      throw error;
+      console.warn('[Quiz System] levels.json fallback:', error);
+      this.levelData = null;
     }
+
+    if (!this.levelData) {
+      this.levelData = defaults[this.levelId] || defaults[1];
+    }
+
+    this.timeLeft = this.levelData.timeLimit || 300;
   }
 
   /**
-   * 문제 로드
+   * 문제 로드 — quiz-data.js(내장) 우선, 없으면 JSON fetch
    */
   async loadQuestions() {
-    try {
-      const response = await fetch('data/quiz-questions.json');
-      const data = await response.json();
-      
-      // 레벨에 해당하는 문제 가져오기
-      const levelKey = `level${this.levelId}`;
-      this.questions = data[levelKey] || [];
-      
-      if (this.questions.length === 0) {
-        throw new Error(`No questions found for level ${this.levelId}`);
-      }
-      
-      // 문제 섞기 (선택사항)
-      // this.shuffleQuestions();
-      
-      console.log('[Quiz System] Questions loaded:', this.questions.length);
-    } catch (error) {
-      console.error('[Quiz System] Failed to load questions:', error);
-      throw error;
+    let data = window.QUIZ_QUESTIONS || null;
+
+    if (!data) {
+      const response = await fetch(`data/quiz-questions.json?v=${Date.now()}`, {
+        cache: 'no-store'
+      });
+      if (!response.ok) throw new Error('quiz-questions.json HTTP ' + response.status);
+      data = await response.json();
+    }
+
+    const levelKey = `level${this.levelId}`;
+    const questions = data[levelKey];
+
+    if (!questions || !questions.length) {
+      throw new Error(`레벨 ${this.levelId} 문제가 없습니다 (${levelKey})`);
+    }
+
+    // 다른 레벨 문제가 섞이지 않도록 해당 키만 복사
+    this.questions = questions.map((q) => ({ ...q, options: [...q.options] }));
+    this.shuffleQuestions();
+
+    const count = this.levelData?.quizCount || this.questions.length;
+    if (this.questions.length > count) {
+      this.questions = this.questions.slice(0, count);
     }
   }
 
@@ -166,22 +199,29 @@ class QuizSystem {
    */
   displayShape(shapeType, color) {
     const shapeDisplay = document.getElementById('shape-display');
-    
-    // 도형 클래스 매핑
+
     const shapeClasses = {
       triangle: 'triangle',
+      rightTriangle: 'right-triangle',
+      isoscelesTriangle: 'isosceles-triangle',
+      quad: 'quad',
       square: 'square',
       rectangle: 'rectangle',
+      rhombus: 'rhombus',
+      parallelogram: 'parallelogram',
+      trapezoid: 'trapezoid',
       circle: 'circle',
       cube: 'cube',
+      box: 'box',
       sphere: 'sphere',
       cylinder: 'cylinder',
       cone: 'cone',
-      pyramid: 'pyramid'
+      pyramid: 'pyramid',
+      prism: 'prism'
     };
 
     const shapeClass = shapeClasses[shapeType] || 'square';
-    
+
     shapeDisplay.innerHTML = `
       <div class="shape ${shapeClass}" style="background-color: ${color};"></div>
     `;

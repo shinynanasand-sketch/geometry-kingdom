@@ -63,18 +63,36 @@
   transition: transform 0.2s ease;
 }
 
-.shape.triangle {
+.shape.triangle,
+.shape.isosceles-triangle {
   clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
 }
 
-.shape.square,
-.shape.rectangle {
+.shape.right-triangle {
+  clip-path: polygon(0% 0%, 0% 100%, 100% 100%);
+}
+
+.shape.quad,
+.shape.square {
   border-radius: 4px;
 }
 
 .shape.rectangle {
   width: 160px;
   height: 100px;
+  border-radius: 4px;
+}
+
+.shape.rhombus {
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+}
+
+.shape.parallelogram {
+  clip-path: polygon(20% 0%, 100% 0%, 80% 100%, 0% 100%);
+}
+
+.shape.trapezoid {
+  clip-path: polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%);
 }
 
 .shape.circle {
@@ -84,6 +102,13 @@
 .shape.cube {
   border-radius: 8px;
   box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.15);
+}
+
+.shape.box {
+  width: 150px;
+  height: 100px;
+  border-radius: 8px;
+  box-shadow: 10px 8px 0 rgba(0, 0, 0, 0.15);
 }
 
 .shape.sphere {
@@ -103,6 +128,12 @@
 
 .shape.pyramid {
   clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+}
+
+.shape.prism {
+  clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+  width: 130px;
+  height: 120px;
 }
 
 .options-section {

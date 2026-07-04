@@ -19,7 +19,10 @@
   <header class="header">
     <div class="container">
       <button class="btn-back" onclick="history.back()">← 뒤로</button>
-      <h1 id="quiz-level-title">퀴즈</h1>
+      <div>
+        <h1 id="quiz-level-title">퀴즈</h1>
+        <span id="quiz-level-badge" style="display:none;font-size:12px;background:#667eea;color:#fff;padding:2px 8px;border-radius:999px;"></span>
+      </div>
       <div class="quiz-timer" id="timer">5:00</div>
     </div>
   </header>
@@ -41,33 +44,29 @@
       <div class="quiz-container" id="quiz-container">
         <!-- 문제 -->
         <div class="question-section">
-          <h2 class="question-text" id="question-text">
-            이 도형의 변은 몇 개일까요?
-          </h2>
+          <h2 class="question-text" id="question-text">문제를 불러오는 중...</h2>
           
           <!-- 도형 표시 영역 -->
-          <div class="shape-display" id="shape-display">
-            <div class="shape triangle" style="background-color: #FF6B6B;"></div>
-          </div>
+          <div class="shape-display" id="shape-display"></div>
         </div>
 
         <!-- 선택지 -->
         <div class="options-section">
-          <button class="option-btn" data-index="0">
+          <button class="option-btn" data-index="0" type="button">
             <span class="option-label">A</span>
-            <span class="option-text">2개</span>
+            <span class="option-text">-</span>
           </button>
-          <button class="option-btn" data-index="1">
+          <button class="option-btn" data-index="1" type="button">
             <span class="option-label">B</span>
-            <span class="option-text">3개</span>
+            <span class="option-text">-</span>
           </button>
-          <button class="option-btn" data-index="2">
+          <button class="option-btn" data-index="2" type="button">
             <span class="option-label">C</span>
-            <span class="option-text">4개</span>
+            <span class="option-text">-</span>
           </button>
-          <button class="option-btn" data-index="3">
+          <button class="option-btn" data-index="3" type="button">
             <span class="option-label">D</span>
-            <span class="option-text">5개</span>
+            <span class="option-text">-</span>
           </button>
         </div>
 
@@ -169,30 +168,32 @@
     </div>
   </main>
 
-  <!-- JavaScript -->
+  <!-- JavaScript: quiz-data.js에 레벨별 문제가 들어 있음 (캐시 문제 방지) -->
   <script src="js/utils.js"></script>
   <script src="js/progress-tracker.js"></script>
-  <script src="js/quiz-system.js"></script>
+  <script src="js/quiz-data.js?v=3"></script>
+  <script src="js/quiz-system.js?v=3"></script>
   
   <script>
-    // 퀴즈 초기화
-    const urlParams = new URLSearchParams(window.location.search);
-    const levelId = parseInt(urlParams.get('level')) || 1;
-    
-    // 퀴즈 시스템 인스턴스 생성
     let quizSystem;
-    
+
+    function getQuizLevelId() {
+      const params = new URLSearchParams(window.location.search);
+      const n = parseInt(params.get('level'), 10);
+      return n >= 1 && n <= 7 ? n : 1;
+    }
+
     window.addEventListener('DOMContentLoaded', () => {
-      // 퀴즈 시스템 초기화
+      const levelId = getQuizLevelId();
+      console.log('[Quiz Page] Starting level', levelId, window.location.search);
+
       quizSystem = new QuizSystem(levelId);
       quizSystem.init();
-      
-      // 선택지 버튼 이벤트
-      document.querySelectorAll('.option-btn').forEach((btn, index) => {
+
+      document.querySelectorAll('.option-btn').forEach((btn) => {
         btn.addEventListener('click', () => {
-          if (quizSystem) {
-            quizSystem.selectAnswer(index);
-          }
+          const index = parseInt(btn.getAttribute('data-index'), 10);
+          if (quizSystem) quizSystem.selectAnswer(index);
         });
       });
     });

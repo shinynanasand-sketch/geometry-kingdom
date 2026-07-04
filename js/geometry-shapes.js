@@ -25,11 +25,27 @@ class GeometryShapes {
       case 'triangle':
         entity = this.createTriangle(color, size);
         break;
+      case 'rightTriangle':
+        entity = this.createRightTriangle(color, size);
+        break;
+      case 'isoscelesTriangle':
+        entity = this.createIsoscelesTriangle(color, size);
+        break;
+      case 'quad':
       case 'square':
         entity = this.createSquare(color, size);
         break;
       case 'rectangle':
         entity = this.createRectangle(color, size);
+        break;
+      case 'rhombus':
+        entity = this.createRhombus(color, size);
+        break;
+      case 'parallelogram':
+        entity = this.createParallelogram(color, size);
+        break;
+      case 'trapezoid':
+        entity = this.createTrapezoid(color, size);
         break;
       case 'circle':
         entity = this.createCircle(color, size);
@@ -172,6 +188,81 @@ class GeometryShapes {
     });
 
     return entity;
+  }
+
+  /**
+   * 2D 다각형 (삼각형 팬으로 구성)
+   * @param {Array<{x:number,y:number}>} points
+   */
+  static createPolygon(color, size, points) {
+    const entity = document.createElement('a-entity');
+    const scaled = points.map((p) => ({ x: p.x * size, y: p.y * size }));
+
+    for (let i = 1; i < scaled.length - 1; i++) {
+      const tri = document.createElement('a-entity');
+      tri.setAttribute('geometry', {
+        primitive: 'triangle',
+        vertexA: `${scaled[0].x} ${scaled[0].y} 0`,
+        vertexB: `${scaled[i].x} ${scaled[i].y} 0`,
+        vertexC: `${scaled[i + 1].x} ${scaled[i + 1].y} 0`
+      });
+      tri.setAttribute('material', {
+        color,
+        side: 'double',
+        shader: 'flat'
+      });
+      entity.appendChild(tri);
+    }
+
+    return entity;
+  }
+
+  /** 직각삼각형 */
+  static createRightTriangle(color, size) {
+    return this.createPolygon(color, size, [
+      { x: -0.5, y: -0.4 },
+      { x: 0.5, y: -0.4 },
+      { x: -0.5, y: 0.5 }
+    ]);
+  }
+
+  /** 이등변삼각형 */
+  static createIsoscelesTriangle(color, size) {
+    return this.createPolygon(color, size, [
+      { x: 0, y: 0.55 },
+      { x: -0.55, y: -0.4 },
+      { x: 0.55, y: -0.4 }
+    ]);
+  }
+
+  /** 마름모 */
+  static createRhombus(color, size) {
+    return this.createPolygon(color, size, [
+      { x: 0, y: 0.55 },
+      { x: 0.45, y: 0 },
+      { x: 0, y: -0.55 },
+      { x: -0.45, y: 0 }
+    ]);
+  }
+
+  /** 평행사변형 */
+  static createParallelogram(color, size) {
+    return this.createPolygon(color, size, [
+      { x: -0.55, y: -0.35 },
+      { x: 0.35, y: -0.35 },
+      { x: 0.55, y: 0.35 },
+      { x: -0.35, y: 0.35 }
+    ]);
+  }
+
+  /** 사다리꼴 */
+  static createTrapezoid(color, size) {
+    return this.createPolygon(color, size, [
+      { x: -0.3, y: 0.4 },
+      { x: 0.3, y: 0.4 },
+      { x: 0.55, y: -0.4 },
+      { x: -0.55, y: -0.4 }
+    ]);
   }
 
   /**
@@ -420,12 +511,39 @@ class GeometryShapes {
         areaFormula: '밑변 × 높이 ÷ 2',
         color: '#FF6B6B'
       },
+      rightTriangle: {
+        name: '직각삼각형',
+        nameEn: 'Right Triangle',
+        sides: 3,
+        vertices: 3,
+        description: '한 각이 직각(90°)인 삼각형',
+        areaFormula: '밑변 × 높이 ÷ 2',
+        color: '#FF8787'
+      },
+      isoscelesTriangle: {
+        name: '이등변삼각형',
+        nameEn: 'Isosceles Triangle',
+        sides: 3,
+        vertices: 3,
+        description: '두 변의 길이가 같은 삼각형',
+        areaFormula: '밑변 × 높이 ÷ 2',
+        color: '#FFA8A8'
+      },
+      quad: {
+        name: '사각형',
+        nameEn: 'Quadrilateral',
+        sides: 4,
+        vertices: 4,
+        description: '변이 4개인 기본 도형',
+        areaFormula: '모양에 따라 다름',
+        color: '#4A90E2'
+      },
       square: {
         name: '정사각형',
         nameEn: 'Square',
         sides: 4,
         vertices: 4,
-        description: '네 변의 길이가 같고, 네 각이 모두 직각인 도형',
+        description: '네 변의 길이가 같고, 네 각이 모두 직각인 사각형',
         areaFormula: '한 변 × 한 변',
         color: '#4A90E2'
       },
@@ -434,9 +552,36 @@ class GeometryShapes {
         nameEn: 'Rectangle',
         sides: 4,
         vertices: 4,
-        description: '네 각이 모두 직각인 도형',
+        description: '네 각이 모두 직각이고, 마주 보는 변의 길이가 같은 도형',
         areaFormula: '가로 × 세로',
         color: '#51CF66'
+      },
+      rhombus: {
+        name: '마름모',
+        nameEn: 'Rhombus',
+        sides: 4,
+        vertices: 4,
+        description: '네 변의 길이가 모두 같은 사각형',
+        areaFormula: '대각선 × 대각선 ÷ 2',
+        color: '#845EF7'
+      },
+      parallelogram: {
+        name: '평행사변형',
+        nameEn: 'Parallelogram',
+        sides: 4,
+        vertices: 4,
+        description: '마주 보는 두 쌍의 변이 각각 평행한 사각형',
+        areaFormula: '밑변 × 높이',
+        color: '#20C997'
+      },
+      trapezoid: {
+        name: '사다리꼴',
+        nameEn: 'Trapezoid',
+        sides: 4,
+        vertices: 4,
+        description: '한 쌍의 대변이 평행한 사각형',
+        areaFormula: '(윗변 + 아랫변) × 높이 ÷ 2',
+        color: '#FF922B'
       },
       circle: {
         name: '원',

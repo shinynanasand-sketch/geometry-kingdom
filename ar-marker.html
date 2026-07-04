@@ -3,37 +3,74 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="마커 기반 AR로 도형을 학습하세요">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <title>AR 학습 (마커) - 도형 왕국</title>
-  
-  <!-- A-Frame -->
+  <script>
+    window.__AR_CAMERA_MODE__ = new URLSearchParams(location.search).get('mode') === 'camera';
+  </script>
   <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
-  
-  <!-- AR.js -->
-  <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
-  
-  <!-- CSS -->
+  <script>
+    if (window.__AR_CAMERA_MODE__) {
+      document.write('<script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"><\/script>');
+    }
+  </script>
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/ar-ui.css">
-  
-  <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    .camera-test-panel {
+      position: absolute;
+      bottom: 90px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: none;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      max-width: 96%;
+      z-index: 1002;
+      pointer-events: auto;
+    }
+    body.mode-camera .camera-test-panel { display: flex; }
+    body.mode-3d .camera-test-panel { display: none !important; }
+    .camera-test-panel button {
+      border: none;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      background: rgba(255,255,255,.95);
+      box-shadow: 0 2px 10px rgba(0,0,0,.2);
+    }
+    .camera-test-panel .sim-btn { background: #fff3bf; }
+    .camera-test-panel .link-btn { background: #d0ebff; }
+    body.mode-3d .marker-status { display: none !important; }
+    body.mode-camera .marker-3d-only { display: none !important; }
+    body.mode-camera #btn-delete,
+    body.mode-camera #btn-info,
+    body.mode-camera #btn-rotate { display: flex !important; }
+    body.mode-3d #shape-selector,
+    body.mode-3d #btn-place,
+    body.mode-3d #scale-controls { display: flex !important; }
+    body.mode-3d #shape-selector { display: block !important; }
+    body.mode-3d #btn-highlight,
+    body.mode-3d #btn-delete { display: flex !important; }
+  </style>
 </head>
 <body class="ar-page">
-  <!-- AR UI 오버레이 -->
+  <script>document.body.classList.add(window.__AR_CAMERA_MODE__ ? 'mode-camera' : 'mode-3d');</script>
+
   <div class="ar-overlay">
-    <!-- 상단 정보 -->
     <div class="ar-header">
-      <button class="btn-back" onclick="history.back()">
-        <span>← 뒤로</span>
-      </button>
+      <button class="btn-back" type="button" onclick="history.back()">← 뒤로</button>
       <div class="ar-info">
         <h2 id="level-title">레벨 1: 평면 도형 기초</h2>
-        <p id="level-desc">마커를 카메라에 비춰보세요</p>
+        <p id="level-desc">도형을 고른 뒤 📍 도형 놓기를 누르세요</p>
       </div>
     </div>
-    
-    <!-- 도형 정보 패널 -->
+
     <div class="shape-info" id="shape-info" style="display: none;">
       <div class="shape-info-content">
         <h3 id="shape-name">도형</h3>
@@ -49,139 +86,117 @@
       <button class="btn-close" type="button" onclick="closeShapeInfo()">✕</button>
     </div>
 
-    <div class="shape-selector marker-3d-only" id="shape-selector" style="display: none;">
+    <div class="shape-selector marker-3d-only" id="shape-selector">
       <h4>도형 선택</h4>
       <div class="shape-buttons" id="shape-buttons"></div>
     </div>
 
-    <button class="preview-mode-btn" id="preview-mode-btn" type="button">🖥️ 3D 모드</button>
-    <button class="place-shape-btn marker-3d-only" id="btn-place" type="button" style="display: none;">📍 도형 놓기</button>
-    
-    <!-- 컨트롤 버튼 -->
+    <button class="preview-mode-btn" id="mode-toggle-btn" type="button">📷 카메라 ON (테스트)</button>
+    <button class="place-shape-btn marker-3d-only" id="btn-place" type="button" onclick="placeShape()">📍 도형 놓기</button>
+
+    <div class="camera-test-panel" id="camera-test-panel">
+      <button type="button" class="sim-btn" id="btn-sim" onclick="simulateMarker()">✨ 마커 시뮬레이션</button>
+      <button type="button" class="link-btn" onclick="window.open('markers-test.html','_blank')">🖥 화면 마커 열기</button>
+    </div>
+
     <div class="ar-controls">
-      <button class="control-btn" id="btn-rotate" title="회전" onclick="toggleRotation()">
-        <span>🔄</span>
-      </button>
-      <button class="control-btn marker-3d-only" id="btn-scale" title="크기" onclick="toggleScale()" style="display:none;">
-        <span>📏</span>
-      </button>
-      <button class="control-btn marker-3d-only" id="btn-highlight" title="강조" onclick="toggleHighlight()" style="display:none;">
-        <span>✨</span>
-      </button>
-      <button class="control-btn" id="btn-info" title="정보" onclick="toggleShapeInfo()">
-        <span>ℹ️</span>
-      </button>
-      <button class="control-btn marker-3d-only" id="btn-delete" title="삭제" onclick="deleteShape()" style="display:none;">
-        <span>🗑️</span>
-      </button>
-      <button class="control-btn" id="btn-help" title="도움말" onclick="showHelp()">
-        <span>❓</span>
-      </button>
-      <button class="control-btn" id="btn-quiz" title="퀴즈" onclick="arController && arController.startQuiz()">
-        <span>📝</span>
-      </button>
+      <button class="control-btn" id="btn-rotate" type="button" title="회전" onclick="toggleRotation()">🔄</button>
+      <div class="scale-controls marker-3d-only" id="scale-controls" title="크기 조절">
+        <button class="control-btn scale-btn" id="btn-scale-down" type="button" title="작게" onclick="scaleDown()">−</button>
+        <button class="control-btn scale-btn" id="btn-scale-up" type="button" title="크게" onclick="scaleUp()">+</button>
+      </div>
+      <button class="control-btn marker-3d-only" id="btn-highlight" type="button" title="강조" onclick="toggleHighlight()">✨</button>
+      <button class="control-btn" id="btn-info" type="button" title="정보" onclick="toggleShapeInfo()">ℹ️</button>
+      <button class="control-btn marker-3d-only" id="btn-delete" type="button" title="삭제" onclick="deleteShape()">🗑️</button>
+      <button class="control-btn" id="btn-help" type="button" title="도움말" onclick="showHelp()">❓</button>
+      <button class="control-btn" id="btn-quiz" type="button" title="퀴즈" onclick="arController && arController.startQuiz()">📝</button>
     </div>
-    
-    <!-- 마커 감지 상태 -->
-    <div class="marker-status" id="marker-status">
-      <p>📷 마커를 찾는 중...</p>
+
+    <div class="marker-status" id="marker-status" style="display: none;">
+      <p>📷 마커를 비추거나 시뮬레이션을 누르세요</p>
     </div>
-    <script src="js/ar-status.js"></script>
-    
-    <!-- 도움말 모달 -->
+
     <div class="modal" id="help-modal" style="display: none;">
       <div class="modal-content">
-        <h3>AR 사용 방법</h3>
+        <h3>사용 방법</h3>
         <ol>
-          <li>카메라 권한을 허용해주세요</li>
-          <li>마커를 인쇄하거나 화면에 띄워주세요</li>
-          <li>카메라를 마커에 비춰주세요</li>
-          <li>도형이 나타나면 정보를 확인하세요</li>
+          <li><strong>기본은 카메라 없이</strong> 3D로 학습합니다.</li>
+          <li>도형을 고른 뒤 <strong>📍 도형 놓기</strong>를 누르세요.</li>
+          <li><strong>− / +</strong>로 크기, 🗑️로 삭제할 수 있습니다.</li>
+          <li>마커·카메라 테스트는 <strong>카메라 ON (테스트)</strong>에서 하세요.</li>
+          <li>인쇄 없이: <strong>마커 시뮬레이션</strong> 또는 <strong>화면 마커 열기</strong></li>
         </ol>
-        <p><strong>마커 다운로드:</strong>
-          <a href="https://raw.githubusercontent.com/AR-js-org/AR.js/master/data/images/hiro.png" target="_blank" rel="noopener">Hiro</a> ·
-          <a href="https://raw.githubusercontent.com/AR-js-org/AR.js/master/data/images/kanji.png" target="_blank" rel="noopener">Kanji</a> ·
-          <a href="https://raw.githubusercontent.com/AR-js-org/AR.js/master/data/images/letterA.png" target="_blank" rel="noopener">Letter A</a>
-        </p>
-        <p><strong>카메라 없음:</strong> 왼쪽 상단 <strong>🖥️ 3D 모드</strong> 또는 <code>?mode=3d</code> 로 도형을 직접 볼 수 있습니다.</p>
-        <p><strong>팁:</strong> 밝은 곳에서 사용하면 더 잘 인식됩니다!</p>
-        <button class="btn btn-primary" onclick="closeHelp()">확인</button>
+        <button class="btn btn-primary" type="button" onclick="closeHelp()">확인</button>
       </div>
     </div>
   </div>
 
-  <!-- A-Frame AR 씬 -->
-  <a-scene
-    id="ar-scene"
-    embedded
-    arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;"
-    vr-mode-ui="enabled: false"
-    renderer="logarithmicDepthBuffer: true; precision: medium;"
-    loading-screen="enabled: false">
-    
-    <a-entity id="camera-rig" position="0 1.6 0">
-      <a-entity camera look-controls wasd-controls="enabled: false"></a-entity>
-    </a-entity>
-    
-    <!-- 마커 1: Hiro (기본 테스트용) -->
-    <a-marker preset="hiro" id="marker-hiro">
-      <!-- 도형이 JavaScript로 동적 생성됨 -->
-    </a-marker>
-    
-    <!-- 마커 2: Kanji -->
-    <a-marker preset="kanji" id="marker-kanji">
-      <!-- 도형이 JavaScript로 동적 생성됨 -->
-    </a-marker>
-    
-    <!-- 마커 3: Letter A (원 등 추가 도형) -->
-    <a-marker preset="letterA" id="marker-letterA"></a-marker>
+  <div id="scene-root"></div>
 
-    <a-entity id="ground-anchor" visible="false" position="0 0 -4">
-      <a-plane id="ground-plane" class="ground-plane" rotation="-90 0 0" width="10" height="10"
-        material="color: #51CF66; opacity: 0.4; transparent: true; shader: flat"></a-plane>
-      <a-entity id="shapes-container"></a-entity>
-    </a-entity>
-  </a-scene>
+  <script>
+    (function buildScene() {
+      var cameraMode = window.__AR_CAMERA_MODE__;
+      var root = document.getElementById('scene-root');
+      if (cameraMode) {
+        root.innerHTML = [
+          '<a-scene id="ar-scene" embedded',
+          ' arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;"',
+          ' vr-mode-ui="enabled: false"',
+          ' renderer="logarithmicDepthBuffer: true; precision: medium;"',
+          ' loading-screen="enabled: false">',
+          '  <a-entity id="camera-rig" position="0 0 0">',
+          '    <a-entity camera look-controls wasd-controls="enabled: false"></a-entity>',
+          '  </a-entity>',
+          '  <a-marker preset="hiro" id="marker-hiro"></a-marker>',
+          '  <a-marker preset="kanji" id="marker-kanji"></a-marker>',
+          '  <a-marker preset="letterA" id="marker-letterA"></a-marker>',
+          '  <a-entity id="ground-anchor" visible="false" position="0 0 0">',
+          '    <a-plane id="ground-plane" class="ground-plane" rotation="-90 0 0" width="14" height="14"',
+          '      material="color: #51CF66; opacity: 0.5; transparent: true; shader: flat"></a-plane>',
+          '    <a-entity id="shapes-container"></a-entity>',
+          '  </a-entity>',
+          '</a-scene>'
+        ].join('');
+      } else {
+        root.innerHTML = [
+          '<a-scene id="ar-scene" embedded background="color: #D0EBFF"',
+          ' vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false"',
+          ' renderer="antialias: true; colorManagement: true" loading-screen="enabled: false">',
+          '  <a-entity id="camera-rig" position="0 2.4 4.5" rotation="-28 0 0">',
+          '    <a-entity id="main-camera" camera="active: true"',
+          '      look-controls="magicWindowTrackingEnabled: false; pointerLockEnabled: false"',
+          '      wasd-controls="enabled: false"></a-entity>',
+          '  </a-entity>',
+          '  <a-entity light="type: ambient; color: #FFF; intensity: 0.85"></a-entity>',
+          '  <a-entity light="type: directional; color: #FFF; intensity: 0.6" position="2 4 2"></a-entity>',
+          '  <a-entity id="ground-anchor" position="0 0 0" visible="true">',
+          '    <a-plane id="ground-plane" class="ground-plane" rotation="-90 0 0" width="14" height="14"',
+          '      material="color: #51CF66; opacity: 0.55; transparent: true; shader: flat; side: double"></a-plane>',
+          '    <a-entity id="shapes-container"></a-entity>',
+          '  </a-entity>',
+          '</a-scene>'
+        ].join('');
+      }
+    })();
+  </script>
 
   <script src="js/geometry-shapes.js"></script>
-  <script src="js/ar-3d-helper.js?v=6"></script>
-  <script src="js/ar-shape-controls.js?v=6"></script>
-  <script src="js/ar-marker.js?v=6"></script>
-  
+  <script src="js/ar-3d-helper.js?v=11"></script>
+  <script src="js/ar-shape-controls.js?v=13"></script>
+  <script src="js/ar-marker.js?v=13"></script>
+
   <script>
-    function toggleShapeInfo() {
-      if (window.arController) arController.toggleShapeInfo();
-    }
-    function closeShapeInfo() {
-      if (window.ARShapeControls) ARShapeControls.hideInfoPanel();
-    }
-    function toggleRotation() {
-      if (window.arController) arController.toggleRotation();
-    }
-    function toggleScale() {
-      if (window.arController) arController.toggleScale();
-    }
-    function toggleHighlight() {
-      if (window.arController) arController.toggleHighlight();
-    }
-    function deleteShape() {
-      if (window.arController) arController.deleteCurrentShape();
-    }
-    
-    function showHelp() {
-      document.getElementById('help-modal').style.display = 'flex';
-    }
-    
-    function closeHelp() {
-      document.getElementById('help-modal').style.display = 'none';
-    }
-    
-    // 페이지 로드 시 도움말 표시
-    window.addEventListener('DOMContentLoaded', () => {
-      setTimeout(() => {
-        showHelp();
-      }, 1000);
-    });
+    function placeShape() { if (window.arController) arController.placeSelectedShape(); }
+    function toggleShapeInfo() { if (window.arController) arController.toggleShapeInfo(); }
+    function closeShapeInfo() { if (window.ARShapeControls) ARShapeControls.hideInfoPanel(); }
+    function toggleRotation() { if (window.arController) arController.toggleRotation(); }
+    function scaleUp() { if (window.arController) arController.scaleUp(); }
+    function scaleDown() { if (window.arController) arController.scaleDown(); }
+    function toggleHighlight() { if (window.arController) arController.toggleHighlight(); }
+    function deleteShape() { if (window.arController) arController.deleteCurrentShape(); }
+    function simulateMarker() { if (window.arController) arController.simulateNextMarker(); }
+    function showHelp() { document.getElementById('help-modal').style.display = 'flex'; }
+    function closeHelp() { document.getElementById('help-modal').style.display = 'none'; }
   </script>
 </body>
 </html>

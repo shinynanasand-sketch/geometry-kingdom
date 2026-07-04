@@ -5,7 +5,7 @@
       "name": "평면 도형 기초",
       "difficulty": 1,
       "icon": "⭐",
-      "description": "삼각형, 사각형, 원을 배워요",
+      "description": "기본 도형: 삼각형, 사각형, 원을 배워요",
       "targetGrade": "1-2학년",
       "curriculum": ["2수03-03", "2수03-04"],
       "shapes": [
@@ -14,21 +14,21 @@
           "color": "#FF6B6B",
           "marker": "hiro",
           "name": "삼각형",
-          "description": "변이 3개인 도형"
+          "description": "변이 3개인 기본 도형"
         },
         {
-          "type": "square",
+          "type": "quad",
           "color": "#4A90E2",
           "marker": "kanji",
-          "name": "정사각형",
-          "description": "네 변의 길이가 같고, 네 각이 모두 직각인 도형"
+          "name": "사각형",
+          "description": "변이 4개인 기본 도형"
         },
         {
           "type": "circle",
           "color": "#FFD43B",
           "marker": "letterA",
           "name": "원",
-          "description": "한 점에서 같은 거리에 있는 점들의 모임"
+          "description": "둥근 기본 도형"
         }
       ],
       "quizCount": 10,
@@ -46,7 +46,7 @@
       "name": "평면 도형 심화",
       "difficulty": 2,
       "icon": "⭐⭐",
-      "description": "각도와 사각형의 종류를 배워요",
+      "description": "사각형·삼각형의 종류를 자세히 배워요",
       "targetGrade": "3-4학년",
       "curriculum": ["4수03-01", "4수03-02", "4수03-05"],
       "shapes": [
@@ -55,21 +55,49 @@
           "color": "#4A90E2",
           "marker": "hiro",
           "name": "정사각형",
-          "description": "네 변의 길이가 같고, 네 각이 모두 직각인 도형"
+          "description": "네 변의 길이가 같고, 네 각이 모두 직각인 사각형"
         },
         {
           "type": "rectangle",
           "color": "#51CF66",
           "marker": "kanji",
           "name": "직사각형",
-          "description": "네 각이 모두 직각인 도형"
+          "description": "네 각이 모두 직각인 사각형"
         },
         {
-          "type": "triangle",
-          "color": "#FF6B6B",
+          "type": "rhombus",
+          "color": "#845EF7",
           "marker": "letterA",
-          "name": "삼각형",
-          "description": "변이 3개인 도형"
+          "name": "마름모",
+          "description": "네 변의 길이가 모두 같은 사각형"
+        },
+        {
+          "type": "parallelogram",
+          "color": "#20C997",
+          "marker": "hiro",
+          "name": "평행사변형",
+          "description": "마주 보는 변이 각각 평행한 사각형"
+        },
+        {
+          "type": "trapezoid",
+          "color": "#FF922B",
+          "marker": "kanji",
+          "name": "사다리꼴",
+          "description": "한 쌍의 대변이 평행한 사각형"
+        },
+        {
+          "type": "rightTriangle",
+          "color": "#FF8787",
+          "marker": "letterA",
+          "name": "직각삼각형",
+          "description": "한 각이 직각인 삼각형"
+        },
+        {
+          "type": "isoscelesTriangle",
+          "color": "#FFA8A8",
+          "marker": "hiro",
+          "name": "이등변삼각형",
+          "description": "두 변의 길이가 같은 삼각형"
         }
       ],
       "quizCount": 15,
@@ -78,7 +106,7 @@
       "rewards": {
         "coins": 75,
         "xp": 150,
-        "cards": ["rectangle-card", "rhombus-card"]
+        "cards": ["rectangle-card", "rhombus-card", "trapezoid-card"]
       },
       "characters": ["nemo", "sam"]
     },

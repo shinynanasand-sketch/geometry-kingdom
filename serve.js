@@ -43,7 +43,15 @@ const server = http.createServer((req, res) => {
       return;
     }
     const ext = path.extname(filePath).toLowerCase();
-    res.writeHead(200, { 'Content-Type': MIME[ext] || 'application/octet-stream' });
+    const headers = {
+      'Content-Type': MIME[ext] || 'application/octet-stream'
+    };
+    // 개발 중 HTML/JS/CSS 캐시로 옛 화면이 보이는 문제 방지
+    if (ext === '.html' || ext === '.js' || ext === '.css' || ext === '.json') {
+      headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0';
+      headers['Pragma'] = 'no-cache';
+    }
+    res.writeHead(200, headers);
     res.end(data);
   });
 });

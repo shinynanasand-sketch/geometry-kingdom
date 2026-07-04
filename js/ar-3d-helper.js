@@ -35,7 +35,10 @@ const AR3DHelper = {
   },
 
   getShapeGroundY(shapeType, size = 0.8) {
-    const flat2d = ['triangle', 'square', 'rectangle', 'circle'];
+    const flat2d = [
+      'triangle', 'rightTriangle', 'isoscelesTriangle', 'quad',
+      'square', 'rectangle', 'rhombus', 'parallelogram', 'trapezoid', 'circle'
+    ];
     if (flat2d.includes(shapeType)) return 0.02;
     if (shapeType === 'sphere') return size * 0.5;
     if (shapeType === 'cylinder' || shapeType === 'cone') return size * 0.5;
@@ -43,7 +46,10 @@ const AR3DHelper = {
   },
 
   getPlacementRotation(shapeType) {
-    const flat2d = ['triangle', 'square', 'rectangle', 'circle'];
+    const flat2d = [
+      'triangle', 'rightTriangle', 'isoscelesTriangle', 'quad',
+      'square', 'rectangle', 'rhombus', 'parallelogram', 'trapezoid', 'circle'
+    ];
     if (flat2d.includes(shapeType)) {
       return { x: -90, y: 0, z: 0 };
     }
@@ -62,7 +68,7 @@ const AR3DHelper = {
     });
   },
 
-  /** 클릭은 camera 한 곳에서만 받음 (이중 생성 방지) */
+  /** 안정적인 3D 미리보기 씬 설정 */
   enable3DScene(sceneEl) {
     if (!sceneEl) return;
 
@@ -73,13 +79,11 @@ const AR3DHelper = {
     sceneEl.setAttribute('vr-mode-ui', 'enabled: false');
 
     this.hideArVideo();
-    // AR.js가 늦게 비디오를 만들 수 있음
     setTimeout(() => this.hideArVideo(), 300);
-    setTimeout(() => this.hideArVideo(), 1000);
 
-    // AR.js가 추가한 카메라 비활성화
+    // AR.js가 추가한 여분 카메라 비활성화
     sceneEl.querySelectorAll('[camera]').forEach((cam) => {
-      const inRig = cam.closest('#camera-rig');
+      const inRig = !!cam.closest('#camera-rig');
       if (!inRig) {
         cam.removeAttribute('camera');
         cam.setAttribute('visible', 'false');
@@ -89,55 +93,48 @@ const AR3DHelper = {
     const rig = sceneEl.querySelector('#camera-rig');
     if (rig) {
       rig.setAttribute('visible', 'true');
-      rig.setAttribute('position', '0 1.6 0');
+      rig.setAttribute('position', '0 2.4 4.5');
+      rig.setAttribute('rotation', '-28 0 0');
     }
 
     const camera =
+      sceneEl.querySelector('#main-camera') ||
       sceneEl.querySelector('#camera-rig [camera]') ||
-      sceneEl.querySelector('#camera-rig a-entity') ||
       sceneEl.querySelector('[camera]');
 
     if (camera) {
-      if (!camera.hasAttribute('camera')) {
-        camera.setAttribute('camera', 'active: true');
-      } else {
-        camera.setAttribute('camera', 'active: true');
-      }
+      camera.setAttribute('camera', 'active: true');
       camera.setAttribute('position', '0 0 0');
       camera.setAttribute(
         'look-controls',
         'enabled: true; magicWindowTrackingEnabled: false; pointerLockEnabled: false'
       );
       camera.removeAttribute('wasd-controls');
-      // A-Frame cursor는 보조 — 실제 배치는 캔버스 레이캐스트 사용
-      camera.setAttribute('cursor', 'rayOrigin: mouse; fuse: false');
-      camera.setAttribute(
-        'raycaster',
-        'objects: .ground-plane, .placed-shape, .clickable-shape; far: 50'
-      );
     }
 
     const canvas = sceneEl.canvas || sceneEl.querySelector('canvas');
     if (canvas) {
       canvas.style.pointerEvents = 'auto';
       canvas.style.touchAction = 'none';
+      canvas.style.zIndex = '1';
     }
   },
 
   setupFixedGround(groundAnchor, groundPlane) {
     if (groundAnchor) {
-      groundAnchor.setAttribute('position', '0 0 -4');
+      // 카메라(0, 2.4, 4.5) 앞 바닥에 오도록
+      groundAnchor.setAttribute('position', '0 0 0');
       groundAnchor.setAttribute('rotation', '0 0 0');
       groundAnchor.setAttribute('visible', 'true');
     }
     if (groundPlane) {
       groundPlane.setAttribute('position', '0 0 0');
       groundPlane.setAttribute('rotation', '-90 0 0');
-      groundPlane.setAttribute('width', '12');
-      groundPlane.setAttribute('height', '12');
+      groundPlane.setAttribute('width', '14');
+      groundPlane.setAttribute('height', '14');
       groundPlane.setAttribute(
         'material',
-        'color: #51CF66; opacity: 0.5; transparent: true; shader: flat; side: double'
+        'color: #51CF66; opacity: 0.55; transparent: true; shader: flat; side: double'
       );
       this.addClass(groundPlane, 'ground-plane');
     }
@@ -280,7 +277,7 @@ const AR3DHelper = {
     return {
       x: (col - 1) * 1.2,
       y: this.getShapeGroundY(shapeType, size),
-      z: -1.2 - row * 1.2
+      z: -0.5 - row * 1.2
     };
   },
 
@@ -305,6 +302,90 @@ const AR3DHelper = {
     if (now - this._lastPlaceAt < this.PLACE_COOLDOWN_MS) return false;
     this._lastPlaceAt = now;
     return true;
+  },
+
+  /**
+   * 카메라가 켜지지 않으면 자동으로 카메라 꺼짐(3D) 모드로 전환
+   * @param {{ onCameraReady?: Function, onFallback?: Function, timeoutMs?: number }} options
+   */
+  setupCameraAutoFallback(options = {}) {
+    const onCameraReady = options.onCameraReady || (() => {});
+    const onFallback = options.onFallback || (() => {});
+    // 권한 허용 후 AR.js가 비디오를 붙일 때까지 대기 시간
+    const timeoutMs = options.timeoutMs ?? 3000;
+
+    let settled = false;
+    let poll = null;
+
+    const finishReady = () => {
+      if (settled) return;
+      settled = true;
+      if (poll) clearInterval(poll);
+      onCameraReady();
+    };
+
+    const finishFallback = (reason) => {
+      if (settled) return;
+      settled = true;
+      if (poll) clearInterval(poll);
+      onFallback(reason || 'unavailable');
+    };
+
+    // 카메라 API 없음 (권한/HTTPS/기기 미지원)
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      finishFallback('unsupported');
+      return;
+    }
+
+    const hasLiveCamera = () => {
+      const videos = document.querySelectorAll('video');
+      for (let i = 0; i < videos.length; i++) {
+        const video = videos[i];
+        const stream = video.srcObject;
+        if (stream && typeof stream.getVideoTracks === 'function') {
+          const live = stream.getVideoTracks().some(
+            (track) => track.readyState === 'live' && track.enabled !== false
+          );
+          if (live) return true;
+        }
+        if (video.videoWidth > 0 && video.readyState >= 2) return true;
+      }
+      return false;
+    };
+
+    const startWatching = () => {
+      poll = setInterval(() => {
+        if (settled) {
+          clearInterval(poll);
+          return;
+        }
+        if (hasLiveCamera()) finishReady();
+      }, 300);
+
+      setTimeout(() => {
+        if (settled) return;
+        if (hasLiveCamera()) finishReady();
+        else finishFallback('timeout');
+      }, timeoutMs);
+    };
+
+    window.addEventListener('arjs-video-loaded', () => {
+      if (hasLiveCamera()) finishReady();
+    });
+    window.addEventListener('camera-error', () => finishFallback('error'));
+    document.addEventListener('camera-error', () => finishFallback('error'));
+
+    // 권한 거부/카메라 없음 → 즉시 3D 모드
+    // 권한 허용 → AR.js 비디오가 붙을 때까지 잠시 대기
+    navigator.mediaDevices
+      .getUserMedia({ video: true, audio: false })
+      .then((stream) => {
+        stream.getTracks().forEach((track) => track.stop());
+        startWatching();
+      })
+      .catch(() => {
+        finishFallback('denied');
+      });
   },
 
   bindPlaceButton(buttonId, onPlace) {
@@ -352,7 +433,8 @@ const AR3DHelper = {
     sceneEl.dataset.placementBound = '1';
 
     const handleTap = (clientX, clientY, domTarget) => {
-      if (options.isBlocked?.(domTarget)) return;
+      // 오버레이 UI(버튼 등)는 무시 — 캔버스 클릭만 처리
+      if (domTarget && options.isBlocked?.(domTarget)) return;
 
       this.hideArVideo();
 
@@ -366,7 +448,7 @@ const AR3DHelper = {
           return;
         }
 
-        // 초록 바닥 클릭 → 배치
+        // 초록 바닥 클릭 → 그 위치에 배치
         if (this.isGroundPlaneEl(hit.el, sceneEl) && hit.point) {
           if (!this.canPlaceNow()) return;
           onPlace(
@@ -381,9 +463,20 @@ const AR3DHelper = {
         }
       }
 
-      // 레이캐스트 실패 시: 화면 중앙 근처면 기본 위치에 배치
-      // (바닥이 아직 준비 안 된 경우 대비 — 📍 버튼과 동일)
-      // 단, 의도적으로 빈 곳만 눌렀을 때는 배치하지 않음
+      // 바닥을 못 맞춰도 캔버스를 눌렀으면 기본 위치에 1개 배치
+      // (카메라 각도/로딩 타이밍 문제로 레이캐스트가 실패하는 경우)
+      if (!this.canPlaceNow()) return;
+      const count =
+        typeof options.shapeCount === 'function'
+          ? options.shapeCount()
+          : options.shapeCount || 0;
+      onPlace(
+        this.getDefaultPlacePosition(
+          count,
+          options.shapeType?.(),
+          options.shapeSize?.()
+        )
+      );
     };
 
     const onDown = (event) => {

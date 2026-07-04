@@ -1,4 +1,4 @@
-{
+window.QUIZ_QUESTIONS = {
   "level1": [
     {
       "id": "q1-1",
@@ -784,3 +784,4 @@
     }
   ]
 }
+;

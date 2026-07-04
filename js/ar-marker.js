@@ -5,8 +5,14 @@
 
 const MARKER_SHAPE_ICONS = {
   triangle: '🔺',
+  rightTriangle: '📐',
+  isoscelesTriangle: '🔺',
+  quad: '⬜',
   square: '🟦',
   rectangle: '🟩',
+  rhombus: '◆',
+  parallelogram: '▰',
+  trapezoid: '⏢',
   circle: '⭕',
   cube: '🧊'
 };
@@ -31,57 +37,50 @@ class ARMarkerController {
     this.highlightMode = 'none';
     this.highlightModes = ['none', 'faces', 'edges', 'vertices'];
     this.currentShapeRecord = null;
+    this.simMarkerIndex = 0;
+    this.cameraMode = false;
+  }
+
+  isCameraMode() {
+    return window.__AR_CAMERA_MODE__ === true ||
+      new URLSearchParams(window.location.search).get('mode') === 'camera';
   }
 
   /**
-   * 초기화
+   * 초기화 — 기본은 3D, mode=camera 만 카메라/마커
    */
   async init(levelId = 1) {
     try {
-      console.log('AR Marker Controller initializing...');
+      this.cameraMode = this.isCameraMode();
+      console.log('AR Marker Controller initializing...', this.cameraMode ? 'camera' : '3d');
 
-      // 레벨 데이터 로드
       await this.loadLevelData(levelId);
-
-      // A-Frame 씬이 로드될 때까지 대기
       await this.waitForScene();
 
-      // 씬 및 카메라 가져오기
       this.scene = document.querySelector('a-scene');
-      this.camera = document.querySelector('[camera]');
+      this.camera = document.querySelector('#main-camera') || document.querySelector('[camera]');
+      this.shapesContainer = document.getElementById('shapes-container');
 
       if (!this.scene) {
         throw new Error('A-Frame scene not found');
       }
 
-      // 마커 등록
-      this.registerMarkers();
-
-      // 이벤트 리스너 설정
-      this.setupEventListeners();
-
-      // UI 초기화
       this.initUI();
-      this.setupMarkerStatus();
-      this.setupPreviewModeButton();
-      this.setupPlacement();
+      this.setupModeToggleButton();
 
-      const urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.get('mode') === '3d' || window.AR3DHelper?.is3DMode()) {
-        this.enablePreviewMode();
+      if (this.cameraMode) {
+        this.registerMarkers();
+        this.setupCameraModeUI();
+        this.setupCameraAutoFallback();
       } else {
-        setTimeout(() => this.tryAutoPreviewMode(), 4000);
+        this.enablePreviewMode('카메라 없이 3D로 시작합니다');
       }
 
       this.isInitialized = true;
-      console.log('AR Marker Controller initialized successfully');
-
-      // 환영 메시지 표시
-      this.showWelcomeMessage();
-
+      console.log('AR Marker Controller ready');
     } catch (error) {
       console.error('AR initialization failed:', error);
-      this.showError('AR 초기화에 실패했습니다. 페이지를 새로고침해주세요.');
+      this.showError('초기화에 실패했습니다. 페이지를 새로고침해주세요.');
     }
   }
 
@@ -133,18 +132,22 @@ class ARMarkerController {
         id: 1,
         name: '평면 도형 기초',
         shapes: [
-          { type: 'triangle', color: '#FF6B6B', marker: 'hiro' },
-          { type: 'square', color: '#4A90E2', marker: 'kanji' },
-          { type: 'circle', color: '#FFD43B', marker: 'letterA' }
+          { type: 'triangle', color: '#FF6B6B', marker: 'hiro', name: '삼각형' },
+          { type: 'quad', color: '#4A90E2', marker: 'kanji', name: '사각형' },
+          { type: 'circle', color: '#FFD43B', marker: 'letterA', name: '원' }
         ]
       },
       2: {
         id: 2,
         name: '평면 도형 심화',
         shapes: [
-          { type: 'square', color: '#4A90E2', marker: 'hiro' },
-          { type: 'rectangle', color: '#51CF66', marker: 'kanji' },
-          { type: 'triangle', color: '#FF6B6B', marker: 'letterA' }
+          { type: 'square', color: '#4A90E2', marker: 'hiro', name: '정사각형' },
+          { type: 'rectangle', color: '#51CF66', marker: 'kanji', name: '직사각형' },
+          { type: 'rhombus', color: '#845EF7', marker: 'letterA', name: '마름모' },
+          { type: 'parallelogram', color: '#20C997', marker: 'hiro', name: '평행사변형' },
+          { type: 'trapezoid', color: '#FF922B', marker: 'kanji', name: '사다리꼴' },
+          { type: 'rightTriangle', color: '#FF8787', marker: 'letterA', name: '직각삼각형' },
+          { type: 'isoscelesTriangle', color: '#FFA8A8', marker: 'hiro', name: '이등변삼각형' }
         ]
       }
     };
@@ -280,7 +283,6 @@ class ARMarkerController {
       this.selectedShapeType = shapeData.type;
       if (window.ARShapeControls) {
         ARShapeControls.updateInfo(shapeData.type);
-        ARShapeControls.showInfoPanel();
       }
       this.showShapeControls(true);
     }
@@ -334,19 +336,26 @@ class ARMarkerController {
     this.selectedShapeType = shapeData.type;
     this.currentShape = marker.shape || this.currentShape;
     this.updateShapeInfo(shapeData.type);
-    ARShapeControls?.showInfoPanel();
     this.showShapeControls(true);
   }
 
   showShapeControls(show) {
-    const ids = ['btn-scale', 'btn-highlight', 'btn-delete', 'btn-info'];
+    const ids = [
+      'scale-controls',
+      'btn-scale-up',
+      'btn-scale-down',
+      'btn-highlight',
+      'btn-delete',
+      'btn-info'
+    ];
     ids.forEach((id) => {
       const el = document.getElementById(id);
       if (!el) return;
       if (this.previewMode && el.classList.contains('marker-3d-only')) {
         return;
       }
-      el.style.display = show ? 'flex' : 'none';
+      const isGroup = id === 'scale-controls';
+      el.style.display = show ? (isGroup ? 'flex' : 'flex') : 'none';
     });
   }
 
@@ -354,10 +363,9 @@ class ARMarkerController {
    * UI 초기화
    */
   initUI() {
-    // 레벨 정보 표시
     const levelTitle = document.getElementById('level-title');
     if (levelTitle && this.levelData) {
-      levelTitle.textContent = this.levelData.name;
+      levelTitle.textContent = `레벨 ${this.levelData.id}: ${this.levelData.name}`;
     }
 
     // 뒤로 가기 버튼
@@ -384,71 +392,174 @@ class ARMarkerController {
       });
     }
 
-    const rotateBtn = document.getElementById('btn-rotate');
-    if (rotateBtn && !rotateBtn.dataset.bound) {
-      rotateBtn.dataset.bound = '1';
-      rotateBtn.addEventListener('click', () => this.toggleRotation());
+    // 회전 버튼은 HTML onclick="toggleRotation()" 만 사용 (이중 호출 방지)
+  }
+
+  setupCameraModeUI() {
+    const statusEl = document.getElementById('marker-status');
+    if (statusEl) {
+      statusEl.style.display = 'block';
+      statusEl.onclick = () => { statusEl.style.display = 'none'; };
+      statusEl.innerHTML = `
+        <p>📷 카메라 테스트 모드</p>
+        <p class="hint">마커를 비추거나 「마커 시뮬레이션」을 누르세요</p>
+      `;
     }
+
+    const desc = document.getElementById('level-desc');
+    if (desc) {
+      desc.textContent = '카메라 테스트 — 시뮬레이션 또는 화면 마커 사용';
+    }
+
+    const toggleBtn = document.getElementById('mode-toggle-btn');
+    if (toggleBtn) {
+      toggleBtn.textContent = '🖥️ 3D로 돌아가기';
+      toggleBtn.classList.add('active');
+    }
+
+    this.buildSimButtons();
+    this.showShapeControls(true);
+  }
+
+  buildSimButtons() {
+    const panel = document.getElementById('camera-test-panel');
+    if (!panel || !this.levelData?.shapes) return;
+
+    // 기존 시뮬 버튼 뒤에 도형별 버튼 추가
+    const existing = panel.querySelectorAll('.sim-shape-btn');
+    existing.forEach((el) => el.remove());
+
+    this.levelData.shapes.forEach((shape) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'sim-btn sim-shape-btn';
+      const name = shape.name || GeometryShapes.getShapeInfo(shape.type)?.name || shape.type;
+      btn.textContent = `${MARKER_SHAPE_ICONS[shape.type] || '📐'} ${name}`;
+      btn.addEventListener('click', () => this.simulateMarker(shape.marker));
+      panel.appendChild(btn);
+    });
   }
 
   /**
-   * 마커 상태 UI
+   * 인쇄 마커 없이 인식 성공과 동일한 UI/도형 표시
+   * (마커 트래킹 없이 카메라 앞에 도형을 띄움)
    */
-  setupMarkerStatus() {
+  simulateMarker(markerKey) {
+    const shapes = this.levelData?.shapes || [];
+    let shapeData = shapes.find((s) => s.marker === markerKey);
+    if (!shapeData && shapes.length) {
+      shapeData = shapes[this.simMarkerIndex % shapes.length];
+    }
+    if (!shapeData) {
+      this.showToast('시뮬레이션할 도형이 없습니다');
+      return;
+    }
+    this.showSimulatedShape(shapeData);
+  }
+
+  simulateNextMarker() {
+    const shapes = this.levelData?.shapes || [];
+    if (!shapes.length) return;
+    const shape = shapes[this.simMarkerIndex % shapes.length];
+    this.simMarkerIndex += 1;
+    this.simulateMarker(shape.marker);
+  }
+
+  showSimulatedShape(shapeData) {
+    // 카메라 모드에서 마커 앵커 대신 카메라 앞 고정 위치에 표시
+    let host = document.getElementById('sim-shape-host');
+    if (!host) {
+      host = document.createElement('a-entity');
+      host.id = 'sim-shape-host';
+      host.setAttribute('position', '0 0 -2');
+      this.scene.appendChild(host);
+    }
+    while (host.firstChild) host.removeChild(host.firstChild);
+
+    const shape = GeometryShapes.create({
+      type: shapeData.type,
+      color: shapeData.color,
+      size: 1,
+      animation: true,
+      position: { x: 0, y: 0, z: 0 }
+    });
+    if (!shape) return;
+
+    host.appendChild(shape);
+    const info = GeometryShapes.getShapeInfo(shapeData.type);
+    if (info) GeometryShapes.addLabel(shape, info.name, { x: 0, y: 1.2, z: 0 });
+
+    this.currentShape = shape;
+    this.selectedShapeType = shapeData.type;
+    this.selectedShapeColor = shapeData.color;
+    ARShapeControls?.updateInfo(shapeData.type);
+    this.showShapeControls(true);
+    this.showToast(`${info?.name || shapeData.type} 시뮬레이션`);
+  }
+
+  /**
+   * 카메라 모드에서만: 카메라 실패 시 시뮬레이션 안내 (3D로 강제 이동하지 않음)
+   */
+  setupCameraAutoFallback() {
+    if (!this.cameraMode) return;
+
     const statusEl = document.getElementById('marker-status');
-    if (!statusEl) return;
 
-    const setCameraReady = () => {
+    const onCameraReady = () => {
       this.cameraReady = true;
-      statusEl.innerHTML = `
-        <p>📷 카메라 준비 완료!</p>
-        <p class="hint">Hiro·Kanji·A 마커를 비춰주세요 (탭하면 닫기)</p>
-      `;
-      statusEl.classList.add('found');
+      if (statusEl) {
+        statusEl.style.display = 'block';
+        statusEl.innerHTML = `
+          <p>📷 카메라 준비 완료!</p>
+          <p class="hint">마커를 비추거나 시뮬레이션 / 화면 마커를 사용하세요</p>
+        `;
+      }
     };
 
-    statusEl.onclick = () => {
-      statusEl.style.display = 'none';
+    const onFallback = () => {
+      this.cameraReady = false;
+      if (statusEl) {
+        statusEl.style.display = 'block';
+        statusEl.innerHTML = `
+          <p>📷 카메라를 사용할 수 없습니다</p>
+          <p class="hint">「마커 시뮬레이션」으로 UI를 테스트하세요</p>
+        `;
+      }
+      this.showToast('카메라 없이 시뮬레이션으로 테스트할 수 있습니다');
     };
 
-    window.addEventListener('arjs-video-loaded', setCameraReady);
-    this.scene?.addEventListener('arjs-video-loaded', setCameraReady);
-    window.addEventListener('camera-error', () => {
-      this.enablePreviewMode();
-    });
-
-    setTimeout(setCameraReady, 2000);
-    setTimeout(() => {
-      if (!this.previewMode) statusEl.style.display = 'none';
-    }, 8000);
-  }
-
-  setupEventListeners() {
-    // 3D 모드 배치는 AR3DHelper.bindCanvasPlacement 만 사용 (중복 클릭 방지)
-    window.addEventListener('arjs-video-loaded', () => {
-      console.log('AR camera loaded');
-      this.cameraReady = true;
-    });
-  }
-
-  setupPreviewModeButton() {
-    const btn = document.getElementById('preview-mode-btn');
-    if (!btn || btn.dataset.bound) return;
-    btn.dataset.bound = '1';
-    btn.addEventListener('click', () => {
-      this.enablePreviewMode();
-    });
-  }
-
-  tryAutoPreviewMode() {
-    if (!this.cameraReady && !this.previewMode) {
-      this.enablePreviewMode();
+    if (window.AR3DHelper?.setupCameraAutoFallback) {
+      AR3DHelper.setupCameraAutoFallback({
+        timeoutMs: 4000,
+        onCameraReady,
+        onFallback
+      });
     }
   }
 
-  enablePreviewMode() {
+  setupModeToggleButton() {
+    const btn = document.getElementById('mode-toggle-btn');
+    if (!btn || btn.dataset.bound) return;
+    btn.dataset.bound = '1';
+
+    const level = this.currentLevel || 1;
+    if (this.cameraMode) {
+      btn.textContent = '🖥️ 3D로 돌아가기';
+      btn.addEventListener('click', () => {
+        window.location.href = `ar-marker.html?level=${level}`;
+      });
+    } else {
+      btn.textContent = '📷 카메라 ON (테스트)';
+      btn.addEventListener('click', () => {
+        window.location.href = `ar-marker.html?level=${level}&mode=camera`;
+      });
+    }
+  }
+
+  enablePreviewMode(message) {
     if (this.previewMode) return;
     this.previewMode = true;
+    this.cameraMode = false;
 
     this.shapesContainer = document.getElementById('shapes-container');
     const groundAnchor = document.getElementById('ground-anchor');
@@ -456,7 +567,10 @@ class ARMarkerController {
     document.querySelectorAll('a-marker').forEach((m) => {
       m.setAttribute('visible', 'false');
     });
-    if (groundAnchor) groundAnchor.setAttribute('visible', 'true');
+    if (groundAnchor) {
+      groundAnchor.setAttribute('visible', 'true');
+      groundAnchor.setAttribute('position', '0 0 0');
+    }
 
     if (window.AR3DHelper) {
       AR3DHelper.enable3DScene(this.scene);
@@ -468,14 +582,14 @@ class ARMarkerController {
     if (selector) selector.style.display = 'block';
     if (placeBtn) placeBtn.style.display = 'block';
 
-    const btn = document.getElementById('preview-mode-btn');
+    const btn = document.getElementById('mode-toggle-btn');
     if (btn) {
-      btn.classList.add('active');
-      btn.textContent = '🖥️ 3D 모드 ON';
+      btn.classList.remove('active');
+      btn.textContent = '📷 카메라 ON (테스트)';
     }
 
     const desc = document.getElementById('level-desc');
-    if (desc) desc.textContent = '3D 모드 — 초록 바닥 클릭=배치, 도형 클릭=선택, 🗑️=삭제';
+    if (desc) desc.textContent = '3D 모드 — 도형 선택 후 📍 도형 놓기';
 
     this.buildShapeSelector();
     if (this.levelData?.shapes?.[0]) {
@@ -488,15 +602,16 @@ class ARMarkerController {
 
     this.show3dControls(true);
 
-    // 3D 모드 전환 후 캔버스 클릭 다시 연결
     this.placementReady = false;
     if (this.scene) this.scene.dataset.placementBound = '';
     this.setupPlacement();
+
+    if (message) this.showToast(message);
   }
 
   show3dControls(show) {
     document.querySelectorAll('.marker-3d-only').forEach((el) => {
-      if (el.classList.contains('control-btn')) {
+      if (el.classList.contains('control-btn') || el.classList.contains('scale-controls')) {
         el.style.display = show ? 'flex' : 'none';
       } else if (el.classList.contains('shape-selector')) {
         el.style.display = show ? 'block' : 'none';
@@ -542,24 +657,35 @@ class ARMarkerController {
   }
 
   toggleRotation() {
-    if (this.previewMode) {
-      if (!this.currentShape) return;
-      ARShapeControls.toggleRotation(this);
+    if (!this.currentShape) {
+      this.showToast('먼저 도형을 놓거나 선택하세요');
       return;
     }
-    if (!this.currentShape) return;
-    const current = this.currentShape.getAttribute('animation');
-    if (current) this.currentShape.removeAttribute('animation');
-    else {
-      this.currentShape.setAttribute('animation', {
-        property: 'rotation', to: '0 360 0', loop: true, dur: 5000, easing: 'linear'
-      });
+    if (!window.ARShapeControls) return;
+    const on = ARShapeControls.toggleRotation(this);
+    this.showToast(on ? '회전 모드 ON — 마우스로 드래그하세요' : '회전 모드 OFF');
+  }
+
+  scaleUp() {
+    if (!this.currentShape) {
+      this.showToast('먼저 도형을 눌러 선택하세요');
+      return;
     }
+    const value = ARShapeControls.scaleUp(this);
+    if (value != null) this.showToast(`크기 + (${value})`);
+  }
+
+  scaleDown() {
+    if (!this.currentShape) {
+      this.showToast('먼저 도형을 눌러 선택하세요');
+      return;
+    }
+    const value = ARShapeControls.scaleDown(this);
+    if (value != null) this.showToast(`크기 − (${value})`);
   }
 
   toggleScale() {
-    if (!this.currentShape) return;
-    ARShapeControls.toggleScale(this);
+    this.scaleUp();
   }
 
   toggleHighlight() {
@@ -576,8 +702,17 @@ class ARMarkerController {
 
     if (this.previewMode) {
       ARShapeControls.deleteShape(this);
-      this.showToast(`${name}을(를) 삭제했습니다`);
-      if (!this.currentShape) this.showShapeControls(false);
+      this.showToast(`${name} 삭제했습니다`);
+      return;
+    }
+
+    // 시뮬레이션 호스트에 있는 도형
+    const simHost = document.getElementById('sim-shape-host');
+    if (simHost && simHost.contains(this.currentShape)) {
+      simHost.removeChild(this.currentShape);
+      this.currentShape = null;
+      ARShapeControls?.hideInfoPanel();
+      this.showToast(`${name} 삭제했습니다`);
       return;
     }
 
@@ -588,9 +723,8 @@ class ARMarkerController {
       markerEntry.isVisible = false;
     }
     this.currentShape = null;
-    ARShapeControls.hideInfoPanel();
-    this.showShapeControls(false);
-    this.showToast(`${name}을(를) 삭제했습니다`);
+    ARShapeControls?.hideInfoPanel();
+    this.showToast(`${name} 삭제했습니다`);
   }
 
   showToast(message) {
@@ -641,20 +775,24 @@ class ARMarkerController {
     this.placementReady = true;
 
     window.selectShape = (type, color) => this.selectShape(type, color);
+    window.scaleUp = () => this.scaleUp();
+    window.scaleDown = () => this.scaleDown();
+    window.toggleScale = () => this.scaleUp();
 
     if (!window.AR3DHelper) return;
 
-    AR3DHelper.bindPlaceButton('btn-place', () => this.placeSelectedShape());
+    // 📍 버튼은 HTML onclick="placeShape()" 사용
 
     const canvas = this.scene.canvas || this.scene.querySelector('canvas');
     if (canvas) delete canvas.dataset.arPlacementBound;
     this.scene.dataset.placementBound = '';
 
     AR3DHelper.bindCanvasPlacement(this.scene, (pos) => {
-      this.placeSelectedShapeAt(pos);
+      if (this.rotationEnabled) return;
+      this.placeSelectedShapeAt(pos, false);
     }, {
       isBlocked: (target) => !!target?.closest?.(
-        '.shape-btn, .control-btn, .btn-back, .modal, .preview-mode-btn, .place-shape-btn, .ar-header, #help-modal, .shape-info'
+        '.shape-btn, .control-btn, .btn-back, .modal, .preview-mode-btn, .place-shape-btn, .ar-header, #help-modal, .shape-info, .scale-controls, .camera-test-panel, #mode-toggle-btn'
       ),
       shapeCount: () => this.shapes.length,
       shapeType: () => this.selectedShapeType,
@@ -668,23 +806,39 @@ class ARMarkerController {
   }
 
   placeSelectedShape() {
+    if (this.rotationEnabled) {
+      this.showToast('회전 모드에서는 도형을 놓을 수 없습니다. 🔄를 다시 누르세요');
+      return;
+    }
     if (!this.previewMode) this.enablePreviewMode();
     const pos = window.AR3DHelper
       ? AR3DHelper.getDefaultPlacePosition(this.shapes.length, this.selectedShapeType, 0.8)
-      : { x: 0, y: 0.4, z: -1.2 };
-    this.placeSelectedShapeAt(pos);
+      : { x: 0, y: 0.4, z: -0.5 };
+    this.placeSelectedShapeAt(pos, true);
   }
 
-  placeSelectedShapeAt(position) {
+  placeSelectedShapeAt(position, isLocal = false) {
     if (!this.shapesContainer) {
       this.shapesContainer = document.getElementById('shapes-container');
     }
-    if (!this.shapesContainer) return;
+    if (!this.shapesContainer) {
+      this.showToast('화면을 불러오는 중입니다');
+      return;
+    }
 
     const size = 0.8;
-    const localPos = window.AR3DHelper
-      ? AR3DHelper.normalizePlacementPosition(this.scene, position, this.selectedShapeType, size)
-      : position;
+    let localPos = position;
+    if (!isLocal && window.AR3DHelper) {
+      localPos = AR3DHelper.normalizePlacementPosition(
+        this.scene, position, this.selectedShapeType, size
+      );
+    } else if (window.AR3DHelper) {
+      localPos = {
+        x: position.x,
+        y: AR3DHelper.getShapeGroundY(this.selectedShapeType, size),
+        z: position.z
+      };
+    }
     const rotation = window.AR3DHelper
       ? AR3DHelper.getPlacementRotation(this.selectedShapeType)
       : { x: 0, y: 0, z: 0 };
@@ -818,10 +972,6 @@ let arController = null;
 
 // 페이지 로드 시 초기화
 window.addEventListener('DOMContentLoaded', () => {
-  if (window.ARStatus) {
-    window.ARStatus.initMarker();
-  }
-
   const urlParams = new URLSearchParams(window.location.search);
   const level = parseInt(urlParams.get('level'), 10) || 1;
 

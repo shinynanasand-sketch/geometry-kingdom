@@ -211,6 +211,40 @@
   justify-content: center;
 }
 
+/* 크기 + / − 버튼 그룹 */
+.scale-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 28px;
+  padding: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.scale-controls .scale-btn {
+  width: 48px;
+  height: 48px;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1;
+  box-shadow: none;
+  background: transparent;
+}
+
+.scale-controls .scale-btn:hover {
+  background: #f1f3f5;
+  transform: none;
+}
+
+.scale-controls #btn-scale-up {
+  color: #2f9e44;
+}
+
+.scale-controls #btn-scale-down {
+  color: #e03131;
+}
+
 .control-btn:hover {
   background: #fff;
   transform: translateY(-4px);
@@ -219,6 +253,18 @@
 
 .control-btn:active {
   transform: translateY(-2px);
+}
+
+/* 회전 모드: 화면 드래그로 도형 회전 */
+body.rotation-mode {
+  cursor: grab;
+}
+body.rotation-mode:active {
+  cursor: grabbing;
+}
+body.rotation-mode #btn-rotate {
+  background: #667eea;
+  color: #fff;
 }
 
 /* 마커 감지 상태 */
@@ -641,6 +687,12 @@
     width: 48px;
     height: 48px;
     font-size: 20px;
+  }
+
+  .scale-controls .scale-btn {
+    width: 42px;
+    height: 42px;
+    font-size: 24px;
   }
 
   .ar-controls {
