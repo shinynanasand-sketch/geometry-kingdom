@@ -1,0 +1,48 @@
+name: Regenerate SSD Report
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'docs/PRD.md'
+      - 'docs/SRS.md'
+      - 'docs/ssd-ai-log.json'
+      - 'docs/TRD.md'
+      - 'data/**'
+      - 'js/**'
+      - 'ar-*.html'
+      - 'index.html'
+      - 'quiz.html'
+      - 'markers-test.html'
+      - 'scripts/generate-ssd-report.js'
+      - '.github/workflows/ssd-report.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  regenerate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Generate SSD report
+        run: node scripts/generate-ssd-report.js
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md docs/SSD_REPORT.md
+          if git diff --staged --quiet; then
+            echo "SSD README unchanged"
+          else
+            git commit -m "docs: regenerate SSD README [skip ci]"
+            git push
+          fi

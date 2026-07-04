@@ -1,456 +1,250 @@
-# 🎓 초등학생용 기하학 AR 학습 웹앱
+# 도형 왕국 (Geometry Kingdom)
 
-> **도형 친구들과 함께하는 신나는 수학 모험!**
+> **초등학생용 기하학 AR 학습 웹앱** — Specification Driven Development (SSD) 안내  
+> 자동 생성: `2026-07-04` · 생성기: `scripts/generate-ssd-report.js`
 
-초등학생들이 AR(증강현실) 기술을 활용하여 기하학을 재미있게 학습할 수 있는 웹 애플리케이션입니다.
+GitHub 저장소 **기본 README**입니다. PRD·SRS·구현 기술·AI 협업을 SSD 관점에서 정리합니다.
 
-## 🧪 학생 테스트 (온라인)
-
-설치 없이 브라우저에서 바로 체험할 수 있습니다.
-
-**메인:** https://shinynanasand-sketch.github.io/geometry-kingdom/
-
-| 바로가기 | URL |
-|----------|-----|
-| 홈 | https://shinynanasand-sketch.github.io/geometry-kingdom/ |
-| 레벨 1 | https://shinynanasand-sketch.github.io/geometry-kingdom/ar-marker.html?level=1 |
-| 레벨 2 | https://shinynanasand-sketch.github.io/geometry-kingdom/ar-marker.html?level=2 |
-| 레벨 3 | https://shinynanasand-sketch.github.io/geometry-kingdom/ar-markerless.html?level=3 |
-| 레벨 4 | https://shinynanasand-sketch.github.io/geometry-kingdom/ar-markerless.html?level=4 |
-| 퀴즈 (레벨1) | https://shinynanasand-sketch.github.io/geometry-kingdom/quiz.html?level=1 |
-
-자세한 안내는 [docs/STUDENT_TEST.md](docs/STUDENT_TEST.md)를 참고하세요.
-
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![HTML5](https://img.shields.io/badge/HTML5-E34F26?logo=html5&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/HTML)
-[![CSS3](https://img.shields.io/badge/CSS3-1572B6?logo=css3&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/CSS)
-[![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
-[![A-Frame](https://img.shields.io/badge/A--Frame-EF2D5E?logo=aframe&logoColor=white)](https://aframe.io/)
+| 바로가기 | 링크 |
+|----------|------|
+| **학생 테스트 (온라인)** | https://shinynanasand-sketch.github.io/geometry-kingdom/ |
+| 제품 요구사항 (PRD) | [docs/PRD.md](docs/PRD.md) |
+| 소프트웨어 요구사항 (SRS) | [docs/SRS.md](docs/SRS.md) |
+| 학생 테스트 안내 | [docs/STUDENT_TEST.md](docs/STUDENT_TEST.md) |
+| AI 협업 로그 | [docs/ssd-ai-log.json](docs/ssd-ai-log.json) |
 
 ---
 
-## 📖 목차
+## 시작하기
 
-- [프로젝트 소개](#-프로젝트-소개)
-- [주요 기능](#-주요-기능)
-- [기술 스택](#-기술-스택)
-- [설치 방법](#-설치-방법)
-- [사용 방법](#-사용-방법)
-- [프로젝트 구조](#-프로젝트-구조)
-- [레벨 소개](#-레벨-소개)
-- [캐릭터 소개](#-캐릭터-소개)
-- [스크린샷](#-스크린샷)
-- [개발 로드맵](#-개발-로드맵)
-- [기여 방법](#-기여-방법)
-- [라이선스](#-라이선스)
-- [문의](#-문의)
+1. **학생·테스터:** 위 **학생 테스트** 링크를 Chrome으로 엽니다. (설치 불필요)
+2. **개발자:** 저장소를 클론한 뒤 `node serve.js` → http://localhost:8000
+3. **문서 갱신:** 명세/코드 수정 후 `node scripts/generate-ssd-report.js` (master push 시 Actions가 자동 실행)
 
 ---
 
-## 🎯 프로젝트 소개
+## 1. SSD란 이 프로젝트에서 어떻게 적용했는가
 
-이 프로젝트는 초등학생들이 **AR 기술**을 통해 **기하학**을 체험하며 학습할 수 있도록 설계된 교육용 웹 애플리케이션입니다.
+1. **명세 선행**: PRD(제품)·SRS(소프트웨어 요구)·TRD/구현계획으로 범위와 우선순위를 고정
+2. **명세 → 구현 추적**: Phase 표(PRD)와 레벨/퀴즈 데이터(`levels.json`, `quiz-*`)가 구현의 단일 기준
+3. **AI 협업**: Cursor Agent가 명세를 읽고 구현·버그 수정·문서 갱신을 수행, 결정은 사람이 승인
+4. **검증 루프**: 로컬(`serve.js`) + GitHub Pages로 초등 테스터가 링크로 검증
+5. **문서 자동 갱신**: PRD / `ssd-ai-log.json` / 코드 변경 시 본 리포트를 재생성
 
-### 🌟 특징
-
-- 📱 **모바일 우선 설계**: 스마트폰과 태블릿에서 최적화
-- 🎮 **게임 기반 학습**: 재미있는 게임 요소로 학습 동기 부여
-- 🇰🇷 **한국 문화 융합**: 통일신라시대 주령구(국보 제74호) 콘텐츠
-- 📚 **교육과정 반영**: 한국 초등 수학 교육과정 100% 반영
-- 🎨 **귀여운 캐릭터**: 9명의 도형 친구들과 함께하는 모험
-- 🏆 **게이미피케이션**: 수집, 보상, 랭킹 시스템
-
-### 🎓 교육적 가치
-
-- **STEAM 교육**: 과학, 기술, 공학, 예술, 수학의 통합
-- **공간 지각 능력** 향상
-- **자기주도 학습** 능력 개발
-- **한국 문화** 자긍심 고취
+```
+PRD / SRS  ──►  구현 (HTML/JS/Data)  ──►  Pages 배포  ──►  학생 테스트
+   ▲                    │
+   └──── AI 협업 로그 · SSD 리포트 자동 생성 ◄───┘
+```
 
 ---
 
-## ✨ 주요 기능
+## 2. 제품 요구사항 (PRD 요약)
 
-### 1. 📐 AR 학습 모드
-- **마커 기반 AR**: 인쇄 가능한 마커로 안정적인 AR 체험
-- **마커리스 AR**: 마커 없이 평면 감지로 자유로운 배치
-- **3D 도형 관찰**: 360도 회전하며 도형 탐구
-- **인터랙티브 학습**: 터치로 도형 조작
+### 2.1 제품 한 줄
 
-### 2. 🎮 7개 레벨
-- **레벨 1**: 평면 도형 기초 (삼각형, 사각형, 원)
-- **레벨 2**: 평면 도형 심화 (각도, 대칭)
-- **레벨 3**: 입체 도형 기초 (정육면체, 구, 원기둥)
-- **레벨 4**: 입체 도형 심화 (전개도, 각기둥, 각뿔)
-- **레벨 5**: 넓이와 부피 계산
-- **레벨 6**: 종합 챌린지
-- **레벨 7**: 주령구 도형 공방 (특별 레벨)
+초등학생이 **웹 브라우저**에서 **3D/AR 도형**을 조작하며 기하를 배우고, **레벨별 퀴즈**로 확인하는 교육 웹앱.
 
-### 3. 🎲 주령구 특별 콘텐츠
-- **역사 학습**: 통일신라시대 주령구 이야기
-- **14면체 구조**: 깎은 정육면체 탐구
-- **주령구 게임**: 3가지 보드게임
-- **AR 체험**: 주령구 굴리기
+### 2.2 가치 제안 (PRD)
 
-### 4. 🎯 게이미피케이션
-- **도형 카드**: 50장 수집 (일반/레어/에픽/전설)
-- **배지**: 20개 획득 가능
-- **코인 & 경험치**: 레벨업 시스템 (최대 Lv.50)
-- **아이템 상점**: 힌트, 스킨, 효과 구매
-- **랭킹**: 일일/주간/전체 순위
+- 시각화 학습 (3D 도형)
+- 게임화·자기주도 학습
+- 주령구 등 문화 융합 (후속 Phase)
+- 설치 없는 웹 접근성
 
-### 5. 🎪 미니게임 (6종)
-- 도형 사냥 🎯
-- 도형 매칭 🎴
-- 도형 퍼즐 🧩
-- 도형 쌓기 🏗️
-- 도형 레이싱 🏁
-- 도형 공장 🏭
+### 2.3 Phase 상태 (PRD에서 추출)
 
-### 6. 🔬 도형 창작 시스템
-- **자유 창작**: 나만의 입체 도형 만들기
-- **오일러 공식**: V - E + F = 2 검증
-- **과학적 설명**: 왜 정다면체는 5개뿐인가?
-- **불가능한 도형**: 만들 수 없는 이유 학습
+(PRD에서 Phase 표를 찾지 못했습니다)
+
+### 2.4 출시 계획 요약
+
+| 버전 | 상태 | 내용 |
+|------|------|------|
+| v0.5 MVP | ✅ 달성 (2026-07-04) | 레벨 1–4 3D, 레벨별 퀴즈, 카메라 OFF 기본 |
+| v0.8 Beta | 🔄 다음 | 레벨 5–7 AR, 주령구, 게이미피케이션, 미니게임 |
+| v1.0 | ⏳ 계획 | 전 기능·최적화·가이드 |
 
 ---
 
-## 🛠️ 기술 스택
+## 3. 소프트웨어 요구사항 (SRS 요약)
 
-### Frontend
-- **HTML5**: 웹 페이지 구조
-- **CSS3**: 스타일링 및 반응형 디자인
-- **Vanilla JavaScript**: 애플리케이션 로직
+### 3.1 범위
 
-### AR/3D
-- **A-Frame 1.4.0**: 3D/VR 프레임워크
-- **AR.js**: WebAR 라이브러리
+| 포함 | 제외 (SRS) |
+|------|------------|
+| AR/3D 도형 시각화 | 서버 인증 |
+| 7개 레벨 학습 구조 | 실시간 멀티플레이 |
+| 퀴즈·평가 | 유료 결제 |
+| LocalStorage 진행도 | 소셜 로그인 |
 
-### 데이터 저장
-- **LocalStorage**: 진행도, 코인, 배지 저장
+### 3.2 아키텍처 (SRS)
+
+- **클라이언트 전용** SPA성 멀티 페이지 (HTML + Vanilla JS)
+- **A-Frame** 3D, **AR.js**는 카메라 테스트 모드에서만
+- **LocalStorage**로 진행도 유지
+- CDN: A-Frame, (조건부) AR.js, Google Fonts
+
+### 3.3 기능 요구사항 추적 (FR 헤더 기준)
+
+- FR-AR-001: 마커 기반 AR 초기화 — ✅ 부분(3D 기본 + 카메라 테스트)
+- FR-AR-002: 도형 표시 — ✅ 부분(3D 기본 + 카메라 테스트)
+- FR-AR-003: 마커리스 AR — ✅ 부분(3D 기본 + 카메라 테스트)
+- FR-LVL-001: 레벨 선택 — ✅ 레벨 1–4 학습, 5–7 데이터/퀴즈
+- FR-LVL-002: 레벨 진행 — ✅ LocalStorage
+- FR-QZ-001: 퀴즈 로드 — ✅ 레벨별 문제
+- FR-QZ-002: 정답 체크 — ⏳
+- FR-QZ-003: 점수 계산 — ⏳
+- FR-PRG-001: 데이터 저장 — ⏳
+- FR-PRG-002: 통계 표시 — ⏳
+- FR-GM-001: 코인 시스템 — ⏳
+- FR-GM-002: 경험치 및 레벨업 — ✅ 레벨 1–4 학습, 5–7 데이터/퀴즈
+- FR-GM-003: 도형 카드 수집 — ⏳
+- FR-JR-001: 주령구 3D 모델 — ⏳ 페이지/데이터
+- FR-JR-002: 주령구 굴리기 — ⏳ 페이지/데이터
+
+### 3.4 비기능 요구사항 (요지)
+
+- 성능: 로컬/정적 호스팅, 평균 로딩 목표 < 3초 (추가 측정 필요)
+- 사용성: 초등 대상, 카메라 없이도 학습 가능
+- 호환: 최신 Chrome/Safari/Edge, 모바일 브라우저
+- 유지보수: 명세·데이터 파일로 콘텐츠 분리
 
 ---
 
-## 📥 설치 방법
+## 4. 현재까지 구현한 기술
 
-### 1. 저장소 클론
+### 4.1 기술 스택
+
+| 기술 | 역할 | 상태 |
+|------|------|------|
+| HTML5 / CSS3 / Vanilla JS | 앱 전체 UI·로직 | ✅ |
+| A-Frame 1.4 | WebGL 3D 씬 | ✅ |
+| AR.js (조건부) | 마커 AR — `mode=camera` 일 때만 로드 | ✅ |
+| LocalStorage | 진행도·퀴즈 보상 (`progress-tracker.js`) | ✅ |
+| levels.json | 레벨·도형·보상 명세 | ✅ |
+| quiz-questions.json + quiz-data.js | 레벨별 퀴즈 (캐시 우회) | ✅ |
+| GitHub Pages | 학생 테스트용 정적 호스팅 | ✅ |
+| Node serve.js | 로컬 개발 서버 (캐시 비활성) | ✅ |
+
+### 4.2 주요 모듈
+
+| 파일 | 역할 | 존재 |
+|------|------|------|
+| `js/app.js` | 홈·레벨 카드 UI | ✅ |
+| `js/ar-marker.js` | 레벨 1–2 컨트롤러 (3D 기본 / 카메라 테스트) | ✅ |
+| `js/ar-markerless.js` | 레벨 3–4 관련 모듈 (페이지는 인라인 3D 중심) | ✅ |
+| `js/ar-3d-helper.js` | 3D 씬·배치·카메라 폴백 공통 | ✅ |
+| `js/ar-shape-controls.js` | 선택·드래그 회전·크기 ± | ✅ |
+| `js/geometry-shapes.js` | 도형 메시 생성·메타데이터 | ✅ |
+| `js/quiz-system.js` | 퀴즈 엔진 | ✅ |
+| `js/quiz-data.js` | 레벨별 퀴즈 데이터(내장) | ✅ |
+| `js/progress-tracker.js` | 진행도 LocalStorage | ✅ |
+| `js/shape-builder.js` | 도형 창작(Phase 7, 부분) | ✅ |
+| `markers-test.html` | 화면용 AR 마커 (인쇄 없이 테스트) | ✅ |
+
+### 4.3 레벨·콘텐츠 매핑 (`data/levels.json`)
+
+| ID | 이름 | 설명 | 도형 | 학습 UI |
+|----|------|------|------|---------|
+| 1 | 평면 도형 기초 | 기본 도형: 삼각형, 사각형, 원을 배워요 | 삼각형, 사각형, 원 | ar-marker.html (3D 기본) |
+| 2 | 평면 도형 심화 | 사각형·삼각형의 종류를 자세히 배워요 | 정사각형, 직사각형, 마름모, 평행사변형, 사다리꼴, 직각삼각형, 이등변삼각형 | ar-marker.html (3D 기본) |
+| 3 | 입체 도형 기초 | 정육면체, 직육면체, 구, 원기둥을 배워요 | 정육면체, 직육면체, 구, 원기둥 | ar-markerless.html (3D) |
+| 4 | 입체 도형 심화 | 각기둥, 각뿔, 원뿔을 배워요 | 육각기둥, 사각뿔, 원뿔, 정육면체 | ar-markerless.html (3D) |
+| 5 | 넓이와 부피 | 넓이 공식과 부피 공식을 배워요 | 정사각형, 정육면체, 원기둥 | 데이터·퀴즈 위주 (AR 보강 예정) |
+| 6 | 종합 챌린지 | 모든 개념을 종합해서 도전해요 | 삼각형, 정육면체, 구 | 데이터·퀴즈 위주 (AR 보강 예정) |
+| 7 | 주령구 도형 공방 | 통일신라시대 주령구와 다면체를 배워요 | 주령구, 정육면체, 사각뿔 | 데이터·퀴즈 위주 (AR 보강 예정) |
+
+### 4.4 사용자 조작 (MVP)
+
+| 기능 | 설명 |
+|------|------|
+| 도형 놓기 | 📍 버튼 / 바닥 클릭 |
+| 선택 | 도형 클릭 (살짝 확대) |
+| 크기 | − / + |
+| 회전 | 🔄 ON 후 마우스·터치 드래그 |
+| 정보 | ℹ️ (자동 표시 없음) |
+| 삭제 | 🗑️ |
+| 카메라 테스트 | 카메라 ON → 시뮬레이션 / 화면 마커 |
+
+### 4.5 코드베이스 규모 (자동 집계)
+
+- HTML 파일: **10**
+- `js/` 스크립트: **12**
+
+---
+
+## 5. AI와 협업 내용
+
+### 5.1 협업 방식
+
+| 역할 | 담당 |
+|------|------|
+| 명세 작성·우선순위 | 사람 + AI (PRD/SRS) |
+| 구현·리팩터·버그 수정 | Cursor Agent |
+| 수락·배포·학생 테스트 운영 | 사람 |
+| 문서 동기화 | `generate-ssd-report.js` + CI |
+
+### 5.2 협업 타임라인 (`docs/ssd-ai-log.json`)
+
+| 날짜 | 주체 | 유형 | 요약 |
+|------|------|------|------|
+| 2026-07-04 | Cursor Agent / Human | docs | SSD 리포트를 저장소 기본 README.md로 통합, CI로 자동 재생성 |
+| 2026-07-04 | Cursor Agent / Human | docs | SSD 리포트 자동 생성 체계(generate-ssd-report.js) 및 GitHub Pages 연동 |
+| 2026-07-04 | Cursor Agent / Human | content | 레벨 1 기초 vs 레벨 2 심화 도형 차별화, 퀴즈 레벨별 문제 분리 및 quiz-data.js 캐시 우회 |
+| 2026-07-04 | Cursor Agent / Human | ux | 도형 배치·선택·크기(−/+)·드래그 회전·삭제, 정보 패널 자동 표시 제거, 선택 링 제거 |
+| 2026-07-04 | Cursor Agent / Human | mvp | MVP Phase 1–4: 레벨 1–4 3D 학습, 카메라 OFF 기본·카메라 ON 테스트, 마커 시뮬레이션, 레벨별 퀴즈, PRD v1.1, GitHub Pages 학생 테스트 배포 |
+| 2026-06-29 | Cursor Agent / Human | infra | 핵심 모듈·데이터·GitHub(geometry-kingdom) 연동 및 초기 push |
+| 2026-05-18 | Cline AI / Human | spec | PRD·SRS·TRD·구현계획 등 명세 문서 초안 작성 및 프로젝트 골격 구성 |
+
+### 5.3 로그 추가 방법 (이후 구현 시)
+
+`docs/ssd-ai-log.json`의 `entries` 배열에 객체를 추가합니다.
+
+```json
+{
+  "date": "YYYY-MM-DD",
+  "actor": "Cursor Agent / Human",
+  "type": "feature|fix|docs|mvp|ux|content|infra",
+  "summary": "한 줄 요약"
+}
+```
+
+그다음:
 
 ```bash
-git clone https://github.com/shinynanasand-sketch/geometry-kingdom.git
-cd geometry-kingdom
+node scripts/generate-ssd-report.js
 ```
 
-### 2. 로컬 서버 실행
-
-#### Python 사용 (권장)
-```bash
-# Python 3
-python -m http.server 8000
-
-# Python 2
-python -m SimpleHTTPServer 8000
-```
-
-#### Node.js 사용
-```bash
-# http-server 설치
-npm install -g http-server
-
-# 서버 실행
-http-server -p 8000
-```
-
-#### VS Code Live Server 사용
-1. VS Code에서 프로젝트 열기
-2. Live Server 확장 프로그램 설치
-3. `index.html` 우클릭 → "Open with Live Server"
-
-### 3. 브라우저에서 열기
-
-```
-http://localhost:8000
-```
+`master`에 push하면 GitHub Actions가 리포트를 재생성·커밋하고 Pages에 반영합니다.
 
 ---
 
-## 🎮 사용 방법
+## 6. 명세 ↔ 구현 갭 (다음 SSD 작업)
 
-### 1. 메인 화면
-- 캐릭터 선택
-- 레벨 선택 (모든 레벨 처음부터 선택 가능)
-- 일일 미션 확인
-
-### 2. AR 모드 선택
-- **마커 기반 AR**: 마커 다운로드 → 인쇄 → 카메라로 스캔
-- **마커리스 AR**: 카메라 권한 허용 → 평면에 도형 배치
-
-### 3. 퀴즈 풀기
-- 문제 읽기
-- AR로 도형 관찰
-- 정답 선택
-- 힌트 사용 가능
-
-### 4. 미니게임
-- 메인 화면에서 "미니게임" 선택
-- 원하는 게임 선택
-- 게임 플레이
-
-### 5. 주령구 체험
-- 레벨 7 선택
-- 주령구 역사 학습
-- 주령구 만들기
-- 주령구 게임 플레이
+| 항목 | 명세 | 구현 | 다음 액션 |
+|------|------|------|-----------|
+| 레벨 5–7 AR | PRD/SRS | 퀴즈·데이터 위주 | AR 체험 UI 보강 |
+| 주령구 | Phase 5 | 페이지 스텁 | Phase 5 구현 |
+| 게이미피케이션 | Phase 6 | 진행도 일부 | 상점·도감·미니게임 |
+| 도형 창작 | Phase 7 | shape-builder 부분 | 연동·검증 UX |
+| 모바일 최적화 | 비기능 | 부분 | 실기기 QA |
+| 베타 테스트 | 단기 목표 | Pages 배포 완료 | 초등 테스터 피드백 |
 
 ---
 
-## 📁 프로젝트 구조
+## 7. 참고 링크
 
-```
-math/
-├── index.html              # 메인 페이지
-├── ar-marker.html         # 마커 기반 AR
-├── ar-markerless.html     # 마커리스 AR
-├── quiz.html              # 퀴즈 페이지
-├── minigames.html         # 미니게임
-├── juryeonggu.html        # 주령구 페이지
-│
-├── css/                   # 스타일시트
-│   ├── style.css
-│   ├── responsive.css
-│   └── ...
-│
-├── js/                    # JavaScript 파일
-│   ├── app.js
-│   ├── ar-marker.js
-│   ├── quiz-system.js
-│   └── ...
-│
-├── assets/                # 리소스
-│   ├── markers/          # AR 마커
-│   ├── images/           # 이미지
-│   ├── sounds/           # 사운드
-│   └── models/           # 3D 모델
-│
-├── data/                  # 데이터 파일
-│   ├── levels.json
-│   ├── quiz-questions.json
-│   └── ...
-│
-├── docs/                  # 문서
-│   ├── PROJECT_PLAN.md
-│   └── ...
-│
-└── README.md             # 이 파일
-```
+| 문서/리소스 | URL |
+|-------------|-----|
+| 저장소 | https://github.com/shinynanasand-sketch/geometry-kingdom |
+| 학생 테스트 | https://shinynanasand-sketch.github.io/geometry-kingdom/ |
+| README (본 문서) | https://github.com/shinynanasand-sketch/geometry-kingdom#readme |
+| README (Pages) | https://shinynanasand-sketch.github.io/geometry-kingdom/README.md |
+| PRD | [docs/PRD.md](docs/PRD.md) |
+| SRS | [docs/SRS.md](docs/SRS.md) |
+| 학생 안내 | [docs/STUDENT_TEST.md](docs/STUDENT_TEST.md) |
 
 ---
 
-## 🎮 레벨 소개
-
-### 레벨 1: 평면 도형 기초 ⭐
-**대상**: 1-2학년  
-**학습 내용**: 삼각형, 사각형, 원 인식  
-**퀴즈**: 10문제
-
-### 레벨 2: 평면 도형 심화 ⭐⭐
-**대상**: 3-4학년  
-**학습 내용**: 각도, 대칭, 사각형의 종류  
-**퀴즈**: 15문제
-
-### 레벨 3: 입체 도형 기초 ⭐⭐
-**대상**: 3-4학년  
-**학습 내용**: 정육면체, 구, 원기둥  
-**퀴즈**: 15문제
-
-### 레벨 4: 입체 도형 심화 ⭐⭐⭐
-**대상**: 5-6학년  
-**학습 내용**: 전개도, 각기둥, 각뿔  
-**퀴즈**: 20문제
-
-### 레벨 5: 넓이와 부피 ⭐⭐⭐
-**대상**: 5-6학년  
-**학습 내용**: 넓이 공식, 부피 공식  
-**퀴즈**: 20문제
-
-### 레벨 6: 종합 챌린지 ⭐⭐⭐⭐
-**대상**: 전체  
-**학습 내용**: 모든 개념 종합  
-**퀴즈**: 30문제 (시간 제한)
-
-### 레벨 7: 주령구 도형 공방 🎲⭐⭐⭐⭐⭐
-**대상**: 전체  
-**학습 내용**: 14면체, 한국 전통 문화  
-**활동**: 주령구 만들기, 보드게임
-
----
-
-## 👥 캐릭터 소개
-
-### 메인 캐릭터
-
-#### 삼이 (Sam) 🔺
-활발하고 호기심 많은 삼각형 친구
-
-#### 네모 (Nemo) 🟦
-똑똑하고 논리적인 사각형 친구
-
-#### 동글이 (Dongle) ⭕
-친절하고 따뜻한 원 친구
-
-#### 큐브 (Cube) 🎲
-쿨하고 자신감 넘치는 정육면체 친구
-
-#### 스피어 (Sphere) 🌐
-신비롭고 지혜로운 구 친구
-
-### 특별 캐릭터
-
-#### 헷갈이 (Confuser) 😈
-장난스러운 악당 (재미 요소)
-
-#### 오일러 박사 👨‍🔬
-도형 창작 실험실의 안내자
-
-#### 신라 공주 👸
-주령구 레벨의 안내자
-
-#### 장인 할아버지 👴
-주령구 만들기 지도자
-
----
-
-## 📸 스크린샷
-
-> 스크린샷은 개발 완료 후 추가 예정
-
----
-
-## 🗺️ 개발 로드맵
-
-### Phase 1: 기본 구조 ✅
-- [x] 프로젝트 계획 수립
-- [x] 문서 작성
-- [ ] HTML 페이지 구조
-- [ ] CSS 기본 스타일링
-
-### Phase 2: AR 기능 🚧
-- [ ] 마커 기반 AR 구현
-- [ ] 마커리스 AR 구현
-- [ ] 기본 도형 표시
-
-### Phase 3: 레벨 시스템 📋
-- [ ] 레벨 1-2 구현
-- [ ] 레벨 3-4 구현
-- [ ] 레벨 5-6 구현
-- [ ] 레벨 7 (주령구) 구현
-
-### Phase 4: 게이미피케이션 📋
-- [ ] 수집 시스템
-- [ ] 보상 시스템
-- [ ] 상점 시스템
-- [ ] 미니게임 6종
-
-### Phase 5: 최적화 📋
-- [ ] 모바일 최적화
-- [ ] 성능 개선
-- [ ] 테스트 및 버그 수정
-
----
-
-## 🤝 기여 방법
-
-프로젝트에 기여하고 싶으신가요? 환영합니다!
-
-### 1. Fork 하기
-```bash
-# 저장소 Fork
-# GitHub에서 "Fork" 버튼 클릭
-```
-
-### 2. 브랜치 생성
-```bash
-git checkout -b feature/amazing-feature
-```
-
-### 3. 변경사항 커밋
-```bash
-git commit -m 'Add some amazing feature'
-```
-
-### 4. 푸시
-```bash
-git push origin feature/amazing-feature
-```
-
-### 5. Pull Request 생성
-GitHub에서 Pull Request 생성
-
----
-
-## 📄 라이선스
-
-이 프로젝트는 MIT 라이선스 하에 배포됩니다. 자세한 내용은 [LICENSE](LICENSE) 파일을 참조하세요.
-
-```
-MIT License
-
-Copyright (c) 2026 shinynanasand-sketch
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-```
-
----
-
-## 📞 문의
-
-프로젝트에 대한 질문이나 제안이 있으신가요?
-
-- **GitHub Issues**: [이슈 등록](https://github.com/shinynanasand-sketch/geometry-kingdom/issues)
-- **Email**: contact@example.com
-- **Website**: https://example.com
-
----
-
-## 🙏 감사의 말
-
-이 프로젝트는 다음 기술과 리소스를 사용합니다:
-
-- [A-Frame](https://aframe.io/) - WebVR 프레임워크
-- [AR.js](https://ar-js-org.github.io/AR.js-Docs/) - WebAR 라이브러리
-- [국립경주박물관](https://gyeongju.museum.go.kr/) - 주령구 자료 참고
-
----
-
-## 📚 추가 문서
-
-- [프로젝트 계획서](docs/PROJECT_PLAN.md)
-- [교육 콘텐츠 상세](docs/EDUCATIONAL_CONTENT.md)
-- [주령구 가이드](docs/JURYEONGGU_GUIDE.md)
-- [캐릭터 설계](docs/CHARACTER_DESIGN.md)
-- [개발 로드맵](docs/DEVELOPMENT_ROADMAP.md)
-
----
-
-<div align="center">
-
-**Made with ❤️ for Korean Elementary Students**
-
-⭐ 이 프로젝트가 마음에 드신다면 Star를 눌러주세요! ⭐
-
-</div>
+*이 README는 수동으로 길게 편집하지 마세요. `scripts/generate-ssd-report.js`로 생성됩니다.  
+AI 협업 기록은 `docs/ssd-ai-log.json`에 추가하세요.*

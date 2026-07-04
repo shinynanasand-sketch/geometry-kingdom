@@ -35,3 +35,4 @@
 - **카메라 ON (테스트)** 는 선택 사항입니다. 기본은 카메라 없이 학습합니다.
 - 진행도는 브라우저에 저장됩니다. (같은 기기·같은 브라우저에서만 이어집니다.)
 - 저장소: https://github.com/shinynanasand-sketch/geometry-kingdom
+- SSD(명세 기반 개발) 안내(README): https://github.com/shinynanasand-sketch/geometry-kingdom#readme
