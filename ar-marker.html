@@ -34,17 +34,45 @@
     </div>
     
     <!-- 도형 정보 패널 -->
-    <div class="shape-info" id="shape-info">
-      <!-- JavaScript로 동적 생성됨 -->
+    <div class="shape-info" id="shape-info" style="display: none;">
+      <div class="shape-info-content">
+        <h3 id="shape-name">도형</h3>
+        <div class="shape-properties">
+          <p class="prop-faces"><strong>면:</strong> <span id="shape-faces">-</span></p>
+          <p class="prop-edges"><strong>모서리:</strong> <span id="shape-edges">-</span></p>
+          <p class="prop-vertices"><strong>꼭짓점:</strong> <span id="shape-vertices">-</span></p>
+          <p class="prop-sides"><strong>변:</strong> <span id="shape-sides">-</span></p>
+        </div>
+        <p class="shape-description" id="shape-description"></p>
+        <div class="shape-formula"><strong id="shape-formula-label">공식:</strong> <span id="shape-volume">-</span></div>
+      </div>
+      <button class="btn-close" type="button" onclick="closeShapeInfo()">✕</button>
     </div>
+
+    <div class="shape-selector marker-3d-only" id="shape-selector" style="display: none;">
+      <h4>도형 선택</h4>
+      <div class="shape-buttons" id="shape-buttons"></div>
+    </div>
+
+    <button class="preview-mode-btn" id="preview-mode-btn" type="button">🖥️ 3D 모드</button>
+    <button class="place-shape-btn marker-3d-only" id="btn-place" type="button" style="display: none;">📍 도형 놓기</button>
     
     <!-- 컨트롤 버튼 -->
     <div class="ar-controls">
-      <button class="control-btn" id="btn-rotate" title="회전">
+      <button class="control-btn" id="btn-rotate" title="회전" onclick="toggleRotation()">
         <span>🔄</span>
+      </button>
+      <button class="control-btn marker-3d-only" id="btn-scale" title="크기" onclick="toggleScale()" style="display:none;">
+        <span>📏</span>
+      </button>
+      <button class="control-btn marker-3d-only" id="btn-highlight" title="강조" onclick="toggleHighlight()" style="display:none;">
+        <span>✨</span>
       </button>
       <button class="control-btn" id="btn-info" title="정보" onclick="toggleShapeInfo()">
         <span>ℹ️</span>
+      </button>
+      <button class="control-btn marker-3d-only" id="btn-delete" title="삭제" onclick="deleteShape()" style="display:none;">
+        <span>🗑️</span>
       </button>
       <button class="control-btn" id="btn-help" title="도움말" onclick="showHelp()">
         <span>❓</span>
@@ -58,6 +86,7 @@
     <div class="marker-status" id="marker-status">
       <p>📷 마커를 찾는 중...</p>
     </div>
+    <script src="js/ar-status.js"></script>
     
     <!-- 도움말 모달 -->
     <div class="modal" id="help-modal" style="display: none;">
@@ -69,6 +98,12 @@
           <li>카메라를 마커에 비춰주세요</li>
           <li>도형이 나타나면 정보를 확인하세요</li>
         </ol>
+        <p><strong>마커 다운로드:</strong>
+          <a href="https://raw.githubusercontent.com/AR-js-org/AR.js/master/data/images/hiro.png" target="_blank" rel="noopener">Hiro</a> ·
+          <a href="https://raw.githubusercontent.com/AR-js-org/AR.js/master/data/images/kanji.png" target="_blank" rel="noopener">Kanji</a> ·
+          <a href="https://raw.githubusercontent.com/AR-js-org/AR.js/master/data/images/letterA.png" target="_blank" rel="noopener">Letter A</a>
+        </p>
+        <p><strong>카메라 없음:</strong> 왼쪽 상단 <strong>🖥️ 3D 모드</strong> 또는 <code>?mode=3d</code> 로 도형을 직접 볼 수 있습니다.</p>
         <p><strong>팁:</strong> 밝은 곳에서 사용하면 더 잘 인식됩니다!</p>
         <button class="btn btn-primary" onclick="closeHelp()">확인</button>
       </div>
@@ -77,14 +112,16 @@
 
   <!-- A-Frame AR 씬 -->
   <a-scene
+    id="ar-scene"
     embedded
     arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;"
     vr-mode-ui="enabled: false"
     renderer="logarithmicDepthBuffer: true; precision: medium;"
     loading-screen="enabled: false">
     
-    <!-- 카메라 -->
-    <a-entity camera></a-entity>
+    <a-entity id="camera-rig" position="0 1.6 0">
+      <a-entity camera look-controls wasd-controls="enabled: false"></a-entity>
+    </a-entity>
     
     <!-- 마커 1: Hiro (기본 테스트용) -->
     <a-marker preset="hiro" id="marker-hiro">
@@ -97,35 +134,38 @@
     </a-marker>
     
     <!-- 마커 3: Letter A (원 등 추가 도형) -->
-    <a-marker preset="letterA" id="marker-letterA">
-      <!-- 도형이 JavaScript로 동적 생성됨 -->
-    </a-marker>
-    
-    <!-- 커스텀 마커 (레벨별) - 나중에 마커 파일 생성 후 활성화 -->
-    <!-- 
-    <a-marker type="pattern" url="assets/markers/level1-marker.patt" id="marker-level1">
-    </a-marker>
-    -->
+    <a-marker preset="letterA" id="marker-letterA"></a-marker>
+
+    <a-entity id="ground-anchor" visible="false" position="0 0 -4">
+      <a-plane id="ground-plane" class="ground-plane" rotation="-90 0 0" width="10" height="10"
+        material="color: #51CF66; opacity: 0.4; transparent: true; shader: flat"></a-plane>
+      <a-entity id="shapes-container"></a-entity>
+    </a-entity>
   </a-scene>
 
-  <!-- JavaScript -->
-  <script src="js/utils.js"></script>
   <script src="js/geometry-shapes.js"></script>
-  <script src="js/ar-marker.js"></script>
+  <script src="js/ar-3d-helper.js?v=6"></script>
+  <script src="js/ar-shape-controls.js?v=6"></script>
+  <script src="js/ar-marker.js?v=6"></script>
   
   <script>
-    // UI 함수들
     function toggleShapeInfo() {
-      const infoPanel = document.getElementById('shape-info');
-      if (infoPanel.classList.contains('visible')) {
-        infoPanel.classList.remove('visible');
-      } else {
-        infoPanel.classList.add('visible');
-      }
+      if (window.arController) arController.toggleShapeInfo();
     }
-    
     function closeShapeInfo() {
-      document.getElementById('shape-info').classList.remove('visible');
+      if (window.ARShapeControls) ARShapeControls.hideInfoPanel();
+    }
+    function toggleRotation() {
+      if (window.arController) arController.toggleRotation();
+    }
+    function toggleScale() {
+      if (window.arController) arController.toggleScale();
+    }
+    function toggleHighlight() {
+      if (window.arController) arController.toggleHighlight();
+    }
+    function deleteShape() {
+      if (window.arController) arController.deleteCurrentShape();
     }
     
     function showHelp() {

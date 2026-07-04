@@ -6,23 +6,15 @@
   <meta name="description" content="마커리스 AR로 도형을 학습하세요">
   <title>AR 학습 (마커리스) - 도형 왕국</title>
   
-  <!-- A-Frame -->
   <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+  <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
   
-  <!-- AR.js (Image Tracking) -->
-  <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar-nft.js"></script>
-  
-  <!-- CSS -->
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/ar-ui.css">
-  
-  <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body class="ar-page markerless">
-  <!-- AR UI 오버레이 -->
   <div class="ar-overlay">
-    <!-- 상단 정보 -->
     <div class="ar-header">
       <button class="btn-back" onclick="history.back()">
         <span>← 뒤로</span>
@@ -33,59 +25,64 @@
       </div>
     </div>
     
-    <!-- 도형 선택 패널 -->
     <div class="shape-selector" id="shape-selector">
       <h4>도형 선택</h4>
-      <div class="shape-buttons">
-        <button class="shape-btn" data-shape="cube" onclick="selectShape('cube')">
-          <span class="icon">🧊</span>
-          <span class="name">정육면체</span>
+      <div class="shape-buttons" id="shape-buttons">
+        <button class="shape-btn" data-shape="cube" type="button" onclick="selectShape && selectShape('cube', '#845EF7')">
+          <span class="icon">🧊</span><span class="name">정육면체</span>
         </button>
-        <button class="shape-btn" data-shape="sphere" onclick="selectShape('sphere')">
-          <span class="icon">⚪</span>
-          <span class="name">구</span>
+        <button class="shape-btn" data-shape="box" type="button" onclick="selectShape && selectShape('box', '#51CF66')">
+          <span class="icon">📦</span><span class="name">직육면체</span>
         </button>
-        <button class="shape-btn" data-shape="cylinder" onclick="selectShape('cylinder')">
-          <span class="icon">🥫</span>
-          <span class="name">원기둥</span>
+        <button class="shape-btn" data-shape="sphere" type="button" onclick="selectShape && selectShape('sphere', '#FF6B6B')">
+          <span class="icon">⚪</span><span class="name">구</span>
         </button>
-        <button class="shape-btn" data-shape="cone" onclick="selectShape('cone')">
-          <span class="icon">🔺</span>
-          <span class="name">원뿔</span>
-        </button>
-        <button class="shape-btn" data-shape="pyramid" onclick="selectShape('pyramid')">
-          <span class="icon">🔻</span>
-          <span class="name">각뿔</span>
+        <button class="shape-btn" data-shape="cylinder" type="button" onclick="selectShape && selectShape('cylinder', '#20C997')">
+          <span class="icon">🥫</span><span class="name">원기둥</span>
         </button>
       </div>
     </div>
-    
-    <!-- 도형 정보 패널 -->
+
+    <button class="preview-mode-btn" id="preview-mode-btn" type="button" title="카메라 없이 3D 모드">
+      🖥️ 3D 모드
+    </button>
+
+    <button class="place-shape-btn" id="btn-place" type="button">
+      📍 도형 놓기
+    </button>
+
     <div class="shape-info" id="shape-info" style="display: none;">
       <div class="shape-info-content">
         <h3 id="shape-name">정육면체</h3>
         <div class="shape-properties">
-          <p><strong>면:</strong> <span id="shape-faces">6개</span></p>
-          <p><strong>모서리:</strong> <span id="shape-edges">12개</span></p>
-          <p><strong>꼭짓점:</strong> <span id="shape-vertices">8개</span></p>
+          <p class="prop-faces"><strong>면:</strong> <span id="shape-faces">6개</span></p>
+          <p class="prop-edges"><strong>모서리:</strong> <span id="shape-edges">12개</span></p>
+          <p class="prop-vertices"><strong>꼭짓점:</strong> <span id="shape-vertices">8개</span></p>
+          <p class="prop-sides" style="display:none;"><strong>변:</strong> <span id="shape-sides">-</span></p>
         </div>
-        <p class="shape-description" id="shape-description">
-          모든 면이 정사각형인 입체 도형입니다.
-        </p>
+        <p class="shape-description" id="shape-description">설명</p>
         <div class="shape-formula">
-          <strong>부피:</strong> <span id="shape-volume">a³</span>
+          <strong id="shape-formula-label">부피:</strong> <span id="shape-volume">a³</span>
         </div>
       </div>
-      <button class="btn-close" onclick="closeShapeInfo()">✕</button>
+      <button class="btn-close" type="button" onclick="closeShapeInfo()">✕</button>
     </div>
     
-    <!-- 컨트롤 버튼 -->
-    <div class="ar-controls">
+    <div class="ar-controls" id="ar-controls">
       <button class="control-btn" id="btn-rotate" title="회전" onclick="toggleRotation()">
         <span>🔄</span>
       </button>
       <button class="control-btn" id="btn-scale" title="크기" onclick="toggleScale()">
         <span>📏</span>
+      </button>
+      <button class="control-btn" id="btn-highlight" title="강조" onclick="toggleHighlight()">
+        <span>✨</span>
+      </button>
+      <button class="control-btn level4-only" id="btn-unfold" title="전개도" onclick="toggleUnfold()" style="display: none;">
+        <span>📐</span>
+      </button>
+      <button class="control-btn level4-only" id="btn-section" title="단면" onclick="toggleCrossSection()" style="display: none;">
+        <span>🔪</span>
       </button>
       <button class="control-btn" id="btn-info" title="정보" onclick="toggleShapeInfo()">
         <span>ℹ️</span>
@@ -93,33 +90,39 @@
       <button class="control-btn" id="btn-delete" title="삭제" onclick="deleteShape()">
         <span>🗑️</span>
       </button>
+      <button class="control-btn" id="btn-quiz" title="퀴즈" onclick="arController && arController.startQuiz()">
+        <span>📝</span>
+      </button>
       <button class="control-btn" id="btn-help" title="도움말" onclick="showHelp()">
         <span>❓</span>
       </button>
     </div>
     
-    <!-- 평면 감지 상태 -->
     <div class="plane-status" id="plane-status">
-      <p>🔍 평면을 찾는 중...</p>
-      <p class="hint">바닥이나 책상을 비춰보세요</p>
+      <p>⏳ AR 준비 중...</p>
+      <p class="hint">잠시 후 화면을 터치하여 도형을 배치하세요</p>
+    </div>
+    <script src="js/ar-status.js"></script>
+
+    <div class="placement-reticle" id="placement-reticle" style="display: none;">
+      <div class="reticle-ring"></div>
+      <p>여기에 배치</p>
     </div>
     
-    <!-- 도움말 모달 -->
     <div class="modal" id="help-modal" style="display: none;">
       <div class="modal-content">
         <h3>마커리스 AR 사용 방법</h3>
         <ol>
-          <li>카메라 권한을 허용해주세요</li>
-          <li>바닥이나 책상 등 평평한 곳을 비춰주세요</li>
-          <li>평면이 감지되면 터치하여 도형을 배치하세요</li>
-          <li>도형을 선택하고 회전, 크기 조절을 해보세요</li>
+          <li>카메라 권한을 허용해주세요 (모바일 권장)</li>
+          <li>오른쪽에서 도형을 선택하세요</li>
+          <li>화면 가운데를 터치하면 도형이 배치됩니다</li>
+          <li>회전, 크기 조절, 강조 버튼을 사용해보세요</li>
         </ol>
-        <p><strong>팁:</strong> 밝은 곳에서 사용하고, 무늬가 있는 평면이 더 잘 인식됩니다!</p>
+        <p><strong>팁:</strong> PC에서는 카메라 없이도 3D 모드로 사용할 수 있습니다. 왼쪽 상단 <strong>🖥️ 3D 모드</strong> 버튼을 누르거나 <code>?mode=3d</code> 로 접속하세요.</p>
         <button class="btn btn-primary" onclick="closeHelp()">확인</button>
       </div>
     </div>
     
-    <!-- 도형 창작 모드 (mode=create일 때) -->
     <div class="create-mode" id="create-mode" style="display: none;">
       <h3>도형 창작 모드</h3>
       <div class="create-controls">
@@ -147,34 +150,68 @@
     </div>
   </div>
 
-  <!-- A-Frame AR 씬 -->
   <a-scene
+    id="ar-scene"
     embedded
     arjs="sourceType: webcam; debugUIEnabled: false;"
     vr-mode-ui="enabled: false"
     renderer="logarithmicDepthBuffer: true; precision: medium;"
     loading-screen="enabled: false">
     
-    <!-- 카메라 -->
-    <a-entity camera look-controls></a-entity>
+    <a-entity id="camera-rig" position="0 1.6 0">
+      <a-entity camera look-controls wasd-controls="enabled: false"></a-entity>
+    </a-entity>
     
-    <!-- 조명 -->
     <a-entity light="type: ambient; color: #FFF; intensity: 0.8"></a-entity>
-    <a-entity light="type: directional; color: #FFF; intensity: 0.5" position="1 1 1"></a-entity>
+    <a-entity light="type: directional; color: #FFF; intensity: 0.5" position="1 2 1"></a-entity>
     
-    <!-- 도형 컨테이너 -->
-    <a-entity id="shapes-container"></a-entity>
+    <a-entity id="ground-anchor" position="0 0 -4" visible="true">
+      <a-plane
+        id="ground-plane"
+        class="ground-plane"
+        rotation="-90 0 0"
+        width="10"
+        height="10"
+        material="color: #51CF66; opacity: 0.45; transparent: true; shader: flat">
+      </a-plane>
+      <a-entity id="shapes-container"></a-entity>
+    </a-entity>
   </a-scene>
 
-  <!-- JavaScript -->
   <script src="js/utils.js"></script>
   <script src="js/progress-tracker.js"></script>
   <script src="js/geometry-shapes.js"></script>
+  <script src="js/ar-3d-helper.js?v=6"></script>
+  <script src="js/ar-shape-controls.js?v=6"></script>
   <script src="js/shape-builder.js"></script>
-  <script src="js/ar-markerless.js"></script>
+  <script src="js/ar-markerless.js?v=6"></script>
   
   <script>
-    // URL 파라미터 확인 (창작 모드)
+    function toggleShapeInfo() {
+      if (window.arController) arController.toggleShapeInfo();
+    }
+    function closeShapeInfo() {
+      if (window.ARShapeControls) ARShapeControls.hideInfoPanel();
+    }
+    function toggleRotation() {
+      if (window.arController) arController.toggleRotation();
+    }
+    function toggleScale() {
+      if (window.arController) arController.toggleScale();
+    }
+    function toggleHighlight() {
+      if (window.arController) arController.toggleHighlight();
+    }
+    function deleteShape() {
+      if (window.arController) arController.deleteCurrentShape();
+    }
+    function toggleUnfold() {
+      if (window.arController) arController.toggleUnfold();
+    }
+    function toggleCrossSection() {
+      if (window.arController) arController.toggleCrossSection();
+    }
+
     const urlParams = new URLSearchParams(window.location.search);
     const mode = urlParams.get('mode');
 
@@ -192,7 +229,11 @@
     }
 
     function closeShapeInfo() {
-      document.getElementById('shape-info').style.display = 'none';
+      const panel = document.getElementById('shape-info');
+      if (panel) {
+        panel.style.display = 'none';
+        panel.classList.remove('visible');
+      }
     }
 
     window.addEventListener('DOMContentLoaded', () => {

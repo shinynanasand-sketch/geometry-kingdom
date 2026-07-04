@@ -3,6 +3,14 @@
  * AR Marker Controller
  */
 
+const MARKER_SHAPE_ICONS = {
+  triangle: '🔺',
+  square: '🟦',
+  rectangle: '🟩',
+  circle: '⭕',
+  cube: '🧊'
+};
+
 class ARMarkerController {
   constructor() {
     this.scene = null;
@@ -12,6 +20,17 @@ class ARMarkerController {
     this.currentShape = null;
     this.isInitialized = false;
     this.levelData = null;
+    this.previewMode = false;
+    this.cameraReady = false;
+    this.placementReady = false;
+    this.shapes = [];
+    this.shapesContainer = null;
+    this.selectedShapeType = 'triangle';
+    this.selectedShapeColor = '#FF6B6B';
+    this.rotationEnabled = false;
+    this.highlightMode = 'none';
+    this.highlightModes = ['none', 'faces', 'edges', 'vertices'];
+    this.currentShapeRecord = null;
   }
 
   /**
@@ -43,6 +62,16 @@ class ARMarkerController {
 
       // UI 초기화
       this.initUI();
+      this.setupMarkerStatus();
+      this.setupPreviewModeButton();
+      this.setupPlacement();
+
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('mode') === '3d' || window.AR3DHelper?.is3DMode()) {
+        this.enablePreviewMode();
+      } else {
+        setTimeout(() => this.tryAutoPreviewMode(), 4000);
+      }
 
       this.isInitialized = true;
       console.log('AR Marker Controller initialized successfully');
@@ -62,20 +91,17 @@ class ARMarkerController {
   waitForScene() {
     return new Promise((resolve) => {
       const scene = document.querySelector('a-scene');
-      if (scene && scene.hasLoaded) {
+      if (!scene) {
         resolve();
-      } else {
-        document.addEventListener('DOMContentLoaded', () => {
-          const sceneEl = document.querySelector('a-scene');
-          if (sceneEl) {
-            sceneEl.addEventListener('loaded', () => {
-              resolve();
-            });
-          } else {
-            resolve();
-          }
-        });
+        return;
       }
+      if (scene.hasLoaded) {
+        resolve();
+        return;
+      }
+      const done = () => resolve();
+      scene.addEventListener('loaded', done, { once: true });
+      setTimeout(done, 4000);
     });
   }
 
@@ -149,10 +175,15 @@ class ARMarkerController {
       const preset = marker.getAttribute('preset');
       const markerKey = preset || markerId.replace(/^marker-/, '');
 
-      const shapeData = shapeByMarker[markerKey];
-      if (!shapeData) {
-        console.warn(`No shape data for marker: ${markerKey}`);
-        return;
+      const shapeData = shapeByMarker[markerKey] || {
+        type: 'square',
+        color: '#4A90E2',
+        marker: markerKey,
+        name: '도형'
+      };
+
+      if (!shapeByMarker[markerKey]) {
+        console.warn(`No shape data for marker: ${markerKey}, using default`);
       }
 
       this.markers[markerId] = {
@@ -246,6 +277,12 @@ class ARMarkerController {
       }
 
       this.currentShape = marker.shape;
+      this.selectedShapeType = shapeData.type;
+      if (window.ARShapeControls) {
+        ARShapeControls.updateInfo(shapeData.type);
+        ARShapeControls.showInfoPanel();
+      }
+      this.showShapeControls(true);
     }
   }
 
@@ -256,14 +293,21 @@ class ARMarkerController {
     const status = document.getElementById('marker-status');
     if (!status) return;
 
+    status.style.display = 'block';
+
     if (isVisible) {
       const marker = this.markers[markerId];
       const info = GeometryShapes.getShapeInfo(marker?.shapeData?.type);
       status.innerHTML = `<p>✅ ${info?.name || '도형'} 마커 감지됨!</p>`;
+      status.classList.add('found');
+      setTimeout(() => {
+        status.style.display = 'none';
+      }, 3000);
     } else {
       const anyVisible = Object.values(this.markers).some((m) => m.isVisible);
       if (!anyVisible) {
-        status.innerHTML = '<p>📷 마커를 찾는 중...</p>';
+        status.innerHTML = '<p>📷 마커를 찾는 중... (탭하면 닫기)</p>';
+        status.classList.remove('found');
       }
     }
   }
@@ -272,37 +316,38 @@ class ARMarkerController {
    * UI 업데이트
    */
   updateUI(markerId, isVisible) {
-    const infoPanel = document.getElementById('shape-info');
-    if (!infoPanel) return;
-
-    if (isVisible) {
-      const marker = this.markers[markerId];
-      const shapeData = marker.shapeData;
-      const info = GeometryShapes.getShapeInfo(shapeData.type);
-
-      if (info) {
-        infoPanel.innerHTML = `
-          <div class="shape-info-content">
-            <h2>${info.name}</h2>
-            <p class="shape-name-en">${info.nameEn}</p>
-            <div class="shape-properties">
-              ${info.sides !== undefined ? `<p>변: ${info.sides}개</p>` : ''}
-              ${info.vertices !== undefined ? `<p>꼭짓점: ${info.vertices}개</p>` : ''}
-              ${info.faces !== undefined ? `<p>면: ${info.faces}개</p>` : ''}
-              ${info.edges !== undefined ? `<p>모서리: ${info.edges}개</p>` : ''}
-            </div>
-            <p class="shape-description">${info.description}</p>
-          </div>
-        `;
-        infoPanel.classList.add('visible');
-      }
-    } else {
-      // 다른 마커가 보이는지 확인
-      const anyVisible = Object.values(this.markers).some(m => m.isVisible);
+    if (!isVisible) {
+      const anyVisible = Object.values(this.markers).some((m) => m.isVisible);
       if (!anyVisible) {
-        infoPanel.classList.remove('visible');
+        this.showShapeControls(false);
+        if (!this.previewMode) {
+          ARShapeControls?.hideInfoPanel();
+        }
       }
+      return;
     }
+
+    const marker = this.markers[markerId];
+    const shapeData = marker?.shapeData;
+    if (!shapeData) return;
+
+    this.selectedShapeType = shapeData.type;
+    this.currentShape = marker.shape || this.currentShape;
+    this.updateShapeInfo(shapeData.type);
+    ARShapeControls?.showInfoPanel();
+    this.showShapeControls(true);
+  }
+
+  showShapeControls(show) {
+    const ids = ['btn-scale', 'btn-highlight', 'btn-delete', 'btn-info'];
+    ids.forEach((id) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (this.previewMode && el.classList.contains('marker-3d-only')) {
+        return;
+      }
+      el.style.display = show ? 'flex' : 'none';
+    });
   }
 
   /**
@@ -340,65 +385,347 @@ class ARMarkerController {
     }
 
     const rotateBtn = document.getElementById('btn-rotate');
-    if (rotateBtn) {
-      rotateBtn.addEventListener('click', () => {
-        this.toggleRotation();
-      });
+    if (rotateBtn && !rotateBtn.dataset.bound) {
+      rotateBtn.dataset.bound = '1';
+      rotateBtn.addEventListener('click', () => this.toggleRotation());
     }
   }
 
   /**
-   * 도형 회전 토글
+   * 마커 상태 UI
    */
-  toggleRotation() {
-    if (!this.currentShape) return;
+  setupMarkerStatus() {
+    const statusEl = document.getElementById('marker-status');
+    if (!statusEl) return;
 
-    const current = this.currentShape.getAttribute('animation');
-    if (current) {
-      this.currentShape.removeAttribute('animation');
-    } else {
-      this.currentShape.setAttribute('animation', {
-        property: 'rotation',
-        to: '0 360 0',
-        loop: true,
-        dur: 5000,
-        easing: 'linear'
-      });
-    }
+    const setCameraReady = () => {
+      this.cameraReady = true;
+      statusEl.innerHTML = `
+        <p>📷 카메라 준비 완료!</p>
+        <p class="hint">Hiro·Kanji·A 마커를 비춰주세요 (탭하면 닫기)</p>
+      `;
+      statusEl.classList.add('found');
+    };
+
+    statusEl.onclick = () => {
+      statusEl.style.display = 'none';
+    };
+
+    window.addEventListener('arjs-video-loaded', setCameraReady);
+    this.scene?.addEventListener('arjs-video-loaded', setCameraReady);
+    window.addEventListener('camera-error', () => {
+      this.enablePreviewMode();
+    });
+
+    setTimeout(setCameraReady, 2000);
+    setTimeout(() => {
+      if (!this.previewMode) statusEl.style.display = 'none';
+    }, 8000);
   }
 
-  /**
-   * 이벤트 리스너 설정
-   */
   setupEventListeners() {
-    // 씬 클릭 이벤트
-    if (this.scene) {
-      this.scene.addEventListener('click', (e) => {
-        this.onSceneClick(e);
-      });
-    }
-
-    // 카메라 권한 에러 처리
+    // 3D 모드 배치는 AR3DHelper.bindCanvasPlacement 만 사용 (중복 클릭 방지)
     window.addEventListener('arjs-video-loaded', () => {
       console.log('AR camera loaded');
-    });
-
-    window.addEventListener('camera-error', (error) => {
-      console.error('Camera error:', error);
-      this.showError('카메라 접근에 실패했습니다. 카메라 권한을 확인해주세요.');
+      this.cameraReady = true;
     });
   }
 
-  /**
-   * 씬 클릭 시
-   */
-  onSceneClick(event) {
-    // 도형 클릭 감지 및 인터랙션
-    const intersectedEl = event.detail.intersection?.object.el;
-    if (intersectedEl) {
-      console.log('Clicked on:', intersectedEl);
-      // 클릭 효과 추가 가능
+  setupPreviewModeButton() {
+    const btn = document.getElementById('preview-mode-btn');
+    if (!btn || btn.dataset.bound) return;
+    btn.dataset.bound = '1';
+    btn.addEventListener('click', () => {
+      this.enablePreviewMode();
+    });
+  }
+
+  tryAutoPreviewMode() {
+    if (!this.cameraReady && !this.previewMode) {
+      this.enablePreviewMode();
     }
+  }
+
+  enablePreviewMode() {
+    if (this.previewMode) return;
+    this.previewMode = true;
+
+    this.shapesContainer = document.getElementById('shapes-container');
+    const groundAnchor = document.getElementById('ground-anchor');
+
+    document.querySelectorAll('a-marker').forEach((m) => {
+      m.setAttribute('visible', 'false');
+    });
+    if (groundAnchor) groundAnchor.setAttribute('visible', 'true');
+
+    if (window.AR3DHelper) {
+      AR3DHelper.enable3DScene(this.scene);
+      AR3DHelper.setupFixedGround(groundAnchor, document.getElementById('ground-plane'));
+    }
+
+    const selector = document.getElementById('shape-selector');
+    const placeBtn = document.getElementById('btn-place');
+    if (selector) selector.style.display = 'block';
+    if (placeBtn) placeBtn.style.display = 'block';
+
+    const btn = document.getElementById('preview-mode-btn');
+    if (btn) {
+      btn.classList.add('active');
+      btn.textContent = '🖥️ 3D 모드 ON';
+    }
+
+    const desc = document.getElementById('level-desc');
+    if (desc) desc.textContent = '3D 모드 — 초록 바닥 클릭=배치, 도형 클릭=선택, 🗑️=삭제';
+
+    this.buildShapeSelector();
+    if (this.levelData?.shapes?.[0]) {
+      const s = this.levelData.shapes[0];
+      this.selectShape(s.type, s.color);
+    }
+
+    const status = document.getElementById('marker-status');
+    if (status) status.style.display = 'none';
+
+    this.show3dControls(true);
+
+    // 3D 모드 전환 후 캔버스 클릭 다시 연결
+    this.placementReady = false;
+    if (this.scene) this.scene.dataset.placementBound = '';
+    this.setupPlacement();
+  }
+
+  show3dControls(show) {
+    document.querySelectorAll('.marker-3d-only').forEach((el) => {
+      if (el.classList.contains('control-btn')) {
+        el.style.display = show ? 'flex' : 'none';
+      } else if (el.classList.contains('shape-selector')) {
+        el.style.display = show ? 'block' : 'none';
+      } else {
+        el.style.display = show ? 'block' : 'none';
+      }
+    });
+  }
+
+  updateShapeInfo(shapeType) {
+    if (!window.ARShapeControls) return;
+    ARShapeControls.updateInfo(shapeType);
+    const info = GeometryShapes.getShapeInfo(shapeType);
+    const sidesRow = document.querySelector('.prop-sides');
+    const facesRow = document.querySelector('.prop-faces');
+    if (sidesRow && facesRow && info) {
+      const is2d = info.sides !== undefined && info.faces === undefined;
+      sidesRow.style.display = is2d ? 'block' : 'none';
+      facesRow.style.display = is2d ? 'none' : 'block';
+    }
+  }
+
+  toggleShapeInfo() {
+    if (!this.currentShape) {
+      const visibleMarker = Object.values(this.markers).find((m) => m.isVisible && m.shape);
+      if (visibleMarker) {
+        this.currentShape = visibleMarker.shape;
+        this.selectedShapeType = visibleMarker.shapeData.type;
+      }
+    }
+    if (!this.currentShape) {
+      this.showToast('먼저 도형을 눌러 선택하세요');
+      return;
+    }
+    this.updateShapeInfo(this.selectedShapeType);
+    const panel = document.getElementById('shape-info');
+    const isOpen = panel && (panel.classList.contains('visible') || panel.style.display === 'block');
+    if (isOpen) {
+      ARShapeControls.hideInfoPanel();
+    } else {
+      ARShapeControls.showInfoPanel();
+    }
+  }
+
+  toggleRotation() {
+    if (this.previewMode) {
+      if (!this.currentShape) return;
+      ARShapeControls.toggleRotation(this);
+      return;
+    }
+    if (!this.currentShape) return;
+    const current = this.currentShape.getAttribute('animation');
+    if (current) this.currentShape.removeAttribute('animation');
+    else {
+      this.currentShape.setAttribute('animation', {
+        property: 'rotation', to: '0 360 0', loop: true, dur: 5000, easing: 'linear'
+      });
+    }
+  }
+
+  toggleScale() {
+    if (!this.currentShape) return;
+    ARShapeControls.toggleScale(this);
+  }
+
+  toggleHighlight() {
+    if (!this.currentShape) return;
+    ARShapeControls.toggleHighlight(this);
+  }
+
+  deleteCurrentShape() {
+    if (!this.currentShape) {
+      this.showToast('먼저 도형을 눌러 선택하세요');
+      return;
+    }
+    const name = GeometryShapes.getShapeInfo(this.selectedShapeType)?.name || '도형';
+
+    if (this.previewMode) {
+      ARShapeControls.deleteShape(this);
+      this.showToast(`${name}을(를) 삭제했습니다`);
+      if (!this.currentShape) this.showShapeControls(false);
+      return;
+    }
+
+    const markerEntry = Object.values(this.markers).find((m) => m.shape === this.currentShape);
+    if (markerEntry?.element && markerEntry.shape) {
+      markerEntry.element.removeChild(markerEntry.shape);
+      markerEntry.shape = null;
+      markerEntry.isVisible = false;
+    }
+    this.currentShape = null;
+    ARShapeControls.hideInfoPanel();
+    this.showShapeControls(false);
+    this.showToast(`${name}을(를) 삭제했습니다`);
+  }
+
+  showToast(message) {
+    document.querySelector('.toast')?.remove();
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.textContent = message;
+    toast.style.cssText = `
+      position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
+      background: rgba(0,0,0,0.8); color: #fff; padding: 12px 24px;
+      border-radius: 24px; font-size: 14px; z-index: 10000;
+    `;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 2000);
+  }
+
+  buildShapeSelector() {
+    const container = document.getElementById('shape-buttons');
+    const shapes = this.levelData?.shapes || [];
+    if (!container || !shapes.length) return;
+
+    container.innerHTML = '';
+    shapes.forEach((shape) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'shape-btn';
+      btn.dataset.shape = shape.type;
+      btn.innerHTML = `
+        <span class="icon">${MARKER_SHAPE_ICONS[shape.type] || '📐'}</span>
+        <span class="name">${shape.name || GeometryShapes.getShapeInfo(shape.type)?.name || shape.type}</span>
+      `;
+      btn.addEventListener('click', () => this.selectShape(shape.type, shape.color));
+      container.appendChild(btn);
+    });
+  }
+
+  selectShape(type, color) {
+    this.selectedShapeType = type;
+    if (color) this.selectedShapeColor = color;
+    document.querySelectorAll('.shape-btn').forEach((btn) => {
+      btn.classList.toggle('active', btn.dataset.shape === type);
+    });
+    this.updateShapeInfo(type);
+  }
+
+  setupPlacement() {
+    if (!this.scene || this.placementReady) return;
+    this.placementReady = true;
+
+    window.selectShape = (type, color) => this.selectShape(type, color);
+
+    if (!window.AR3DHelper) return;
+
+    AR3DHelper.bindPlaceButton('btn-place', () => this.placeSelectedShape());
+
+    const canvas = this.scene.canvas || this.scene.querySelector('canvas');
+    if (canvas) delete canvas.dataset.arPlacementBound;
+    this.scene.dataset.placementBound = '';
+
+    AR3DHelper.bindCanvasPlacement(this.scene, (pos) => {
+      this.placeSelectedShapeAt(pos);
+    }, {
+      isBlocked: (target) => !!target?.closest?.(
+        '.shape-btn, .control-btn, .btn-back, .modal, .preview-mode-btn, .place-shape-btn, .ar-header, #help-modal, .shape-info'
+      ),
+      shapeCount: () => this.shapes.length,
+      shapeType: () => this.selectedShapeType,
+      shapeSize: () => 0.8,
+      onSelectShape: (el) => {
+        ARShapeControls?.selectShape(el, this);
+        this.showShapeControls(true);
+        this.showToast('도형을 선택했습니다. 🗑️로 삭제할 수 있어요');
+      }
+    });
+  }
+
+  placeSelectedShape() {
+    if (!this.previewMode) this.enablePreviewMode();
+    const pos = window.AR3DHelper
+      ? AR3DHelper.getDefaultPlacePosition(this.shapes.length, this.selectedShapeType, 0.8)
+      : { x: 0, y: 0.4, z: -1.2 };
+    this.placeSelectedShapeAt(pos);
+  }
+
+  placeSelectedShapeAt(position) {
+    if (!this.shapesContainer) {
+      this.shapesContainer = document.getElementById('shapes-container');
+    }
+    if (!this.shapesContainer) return;
+
+    const size = 0.8;
+    const localPos = window.AR3DHelper
+      ? AR3DHelper.normalizePlacementPosition(this.scene, position, this.selectedShapeType, size)
+      : position;
+    const rotation = window.AR3DHelper
+      ? AR3DHelper.getPlacementRotation(this.selectedShapeType)
+      : { x: 0, y: 0, z: 0 };
+
+    const entity = GeometryShapes.create({
+      type: this.selectedShapeType,
+      color: this.selectedShapeColor,
+      size,
+      position: localPos,
+      rotation,
+      animation: false
+    });
+    if (!entity) return;
+
+    entity.dataset.shapeType = this.selectedShapeType;
+    entity.setAttribute('visible', 'true');
+    this.shapesContainer.appendChild(entity);
+
+    if (window.AR3DHelper) {
+      AR3DHelper.markShapeClickable(entity);
+    } else {
+      entity.classList.add('placed-shape', 'clickable-shape');
+      entity.setAttribute('class', 'placed-shape clickable-shape');
+    }
+
+    const record = { entity, type: this.selectedShapeType };
+    this.shapes.push(record);
+
+    if (window.ARShapeControls) {
+      ARShapeControls.selectShape(entity, this);
+    } else {
+      this.currentShapeRecord = record;
+      this.currentShape = entity;
+    }
+
+    const info = GeometryShapes.getShapeInfo(this.selectedShapeType);
+    if (info) {
+      GeometryShapes.addLabel(entity, info.name, { x: 0, y: 1.0, z: 0 });
+    }
+    this.showShapeControls(true);
+    this.showToast(`${info?.name || '도형'}을(를) 배치했습니다!`);
   }
 
   /**
@@ -491,11 +818,13 @@ let arController = null;
 
 // 페이지 로드 시 초기화
 window.addEventListener('DOMContentLoaded', () => {
-  // URL 파라미터에서 레벨 가져오기
-  const urlParams = new URLSearchParams(window.location.search);
-  const level = parseInt(urlParams.get('level')) || 1;
+  if (window.ARStatus) {
+    window.ARStatus.initMarker();
+  }
 
-  // AR 컨트롤러 초기화
+  const urlParams = new URLSearchParams(window.location.search);
+  const level = parseInt(urlParams.get('level'), 10) || 1;
+
   arController = new ARMarkerController();
   window.arController = arController;
   arController.init(level);
