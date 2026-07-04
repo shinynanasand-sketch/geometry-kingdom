@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="학습 진행도를 확인하세요">
+  <title>진행도 - 도형 왕국</title>
+  
+  <!-- CSS -->
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="progress-page">
+  <!-- 헤더 -->
+  <header class="header">
+    <div class="container">
+      <button class="btn-back" onclick="history.back()">← 뒤로</button>
+      <h1>진행도</h1>
+    </div>
+  </header>
+
+  <!-- 네비게이션 -->
+  <nav class="nav">
+    <div class="container">
+      <ul class="nav-list">
+        <li class="nav-item">
+          <a href="index.html">
+            <span class="icon">🏠</span>
+            <span class="text">홈</span>
+          </a>
+        </li>
+        <li class="nav-item active">
+          <a href="progress.html">
+            <span class="icon">📊</span>
+            <span class="text">진행도</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="collection.html">
+            <span class="icon">📚</span>
+            <span class="text">도감</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="shop.html">
+            <span class="icon">🏪</span>
+            <span class="text">상점</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="minigames.html">
+            <span class="icon">🎮</span>
+            <span class="text">게임</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- 메인 콘텐츠 -->
+  <main class="main">
+    <div class="container">
+      <!-- 플레이어 정보 카드 -->
+      <section class="player-card">
+        <div class="player-avatar">
+          <div class="avatar-circle">
+            <span class="avatar-icon">👤</span>
+          </div>
+          <div class="player-level-badge" id="player-level-badge">Lv.1</div>
+        </div>
+        <div class="player-details">
+          <h2 id="player-name">플레이어</h2>
+          <div class="player-stats-grid">
+            <div class="stat">
+              <span class="stat-label">레벨</span>
+              <span class="stat-value" id="player-level">1</span>
+            </div>
+            <div class="stat">
+              <span class="stat-label">경험치</span>
+              <span class="stat-value" id="player-xp">0 / 100</span>
+            </div>
+            <div class="stat">
+              <span class="stat-label">코인</span>
+              <span class="stat-value" id="player-coins">0 🪙</span>
+            </div>
+            <div class="stat">
+              <span class="stat-label">총 점수</span>
+              <span class="stat-value" id="total-score">0</span>
+            </div>
+          </div>
+          <div class="xp-bar-container">
+            <div class="xp-bar" id="xp-bar" style="width: 0%"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 레벨별 진행도 -->
+      <section class="levels-progress">
+        <h3>레벨별 진행도</h3>
+        <div class="levels-grid">
+          <!-- 레벨 1 -->
+          <div class="level-progress-card" data-level="1">
+            <div class="level-header">
+              <span class="level-icon">⭐</span>
+              <h4>레벨 1</h4>
+            </div>
+            <p class="level-name">평면 도형 기초</p>
+            <div class="level-stars">
+              <span class="star empty" id="level1-star1">☆</span>
+              <span class="star empty" id="level1-star2">☆</span>
+              <span class="star empty" id="level1-star3">☆</span>
+            </div>
+            <div class="level-score">
+              <span>최고 점수: </span>
+              <span id="level1-score">0</span>
+            </div>
+            <div class="level-status" id="level1-status">미완료</div>
+          </div>
+
+          <!-- 레벨 2 -->
+          <div class="level-progress-card" data-level="2">
+            <div class="level-header">
+              <span class="level-icon">⭐⭐</span>
+              <h4>레벨 2</h4>
+            </div>
+            <p class="level-name">평면 도형 심화</p>
+            <div class="level-stars">
+              <span class="star empty" id="level2-star1">☆</span>
+              <span class="star empty" id="level2-star2">☆</span>
+              <span class="star empty" id="level2-star3">☆</span>
+            </div>
+            <div class="level-score">
+              <span>최고 점수: </span>
+              <span id="level2-score">0</span>
+            </div>
+            <div class="level-status" id="level2-status">미완료</div>
+          </div>
+
+          <!-- 레벨 3 -->
+          <div class="level-progress-card" data-level="3">
+            <div class="level-header">
+              <span class="level-icon">⭐⭐⭐</span>
+              <h4>레벨 3</h4>
+            </div>
+            <p class="level-name">입체 도형 기초</p>
+            <div class="level-stars">
+              <span class="star empty" id="level3-star1">☆</span>
+              <span class="star empty" id="level3-star2">☆</span>
+              <span class="star empty" id="level3-star3">☆</span>
+            </div>
+            <div class="level-score">
+              <span>최고 점수: </span>
+              <span id="level3-score">0</span>
+            </div>
+            <div class="level-status" id="level3-status">미완료</div>
+          </div>
+
+          <!-- 레벨 4 -->
+          <div class="level-progress-card" data-level="4">
+            <div class="level-header">
+              <span class="level-icon">⭐⭐⭐⭐</span>
+              <h4>레벨 4</h4>
+            </div>
+            <p class="level-name">입체 도형 심화</p>
+            <div class="level-stars">
+              <span class="star empty" id="level4-star1">☆</span>
+              <span class="star empty" id="level4-star2">☆</span>
+              <span class="star empty" id="level4-star3">☆</span>
+            </div>
+            <div class="level-score">
+              <span>최고 점수: </span>
+              <span id="level4-score">0</span>
+            </div>
+            <div class="level-status" id="level4-status">미완료</div>
+          </div>
+
+          <!-- 레벨 5 -->
+          <div class="level-progress-card" data-level="5">
+            <div class="level-header">
+              <span class="level-icon">⭐⭐⭐⭐⭐</span>
+              <h4>레벨 5</h4>
+            </div>
+            <p class="level-name">넓이와 부피</p>
+            <div class="level-stars">
+              <span class="star empty" id="level5-star1">☆</span>
+              <span class="star empty" id="level5-star2">☆</span>
+              <span class="star empty" id="level5-star3">☆</span>
+            </div>
+            <div class="level-score">
+              <span>최고 점수: </span>
+              <span id="level5-score">0</span>
+            </div>
+            <div class="level-status" id="level5-status">미완료</div>
+          </div>
+
+          <!-- 레벨 6 -->
+          <div class="level-progress-card" data-level="6">
+            <div class="level-header">
+              <span class="level-icon">⭐⭐⭐⭐⭐⭐</span>
+              <h4>레벨 6</h4>
+            </div>
+            <p class="level-name">종합 문제</p>
+            <div class="level-stars">
+              <span class="star empty" id="level6-star1">☆</span>
+              <span class="star empty" id="level6-star2">☆</span>
+              <span class="star empty" id="level6-star3">☆</span>
+            </div>
+            <div class="level-score">
+              <span>최고 점수: </span>
+              <span id="level6-score">0</span>
+            </div>
+            <div class="level-status" id="level6-status">미완료</div>
+          </div>
+
+          <!-- 레벨 7 -->
+          <div class="level-progress-card special" data-level="7">
+            <div class="level-header">
+              <span class="level-icon">🎲</span>
+              <h4>레벨 7</h4>
+            </div>
+            <p class="level-name">주령구 (14면체)</p>
+            <div class="level-stars">
+              <span class="star empty" id="level7-star1">☆</span>
+              <span class="star empty" id="level7-star2">☆</span>
+              <span class="star empty" id="level7-star3">☆</span>
+            </div>
+            <div class="level-score">
+              <span>최고 점수: </span>
+              <span id="level7-score">0</span>
+            </div>
+            <div class="level-status" id="level7-status">미완료</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 통계 -->
+      <section class="statistics">
+        <h3>통계</h3>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">📝</div>
+            <div class="stat-info">
+              <span class="stat-label">총 문제 수</span>
+              <span class="stat-value" id="total-questions">0</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">✅</div>
+            <div class="stat-info">
+              <span class="stat-label">정답 수</span>
+              <span class="stat-value correct" id="correct-answers">0</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">❌</div>
+            <div class="stat-info">
+              <span class="stat-label">오답 수</span>
+              <span class="stat-value wrong" id="wrong-answers">0</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">📊</div>
+            <div class="stat-info">
+              <span class="stat-label">정답률</span>
+              <span class="stat-value" id="accuracy-rate">0%</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">⏱️</div>
+            <div class="stat-info">
+              <span class="stat-label">플레이 시간</span>
+              <span class="stat-value" id="play-time">0분</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">📅</div>
+            <div class="stat-info">
+              <span class="stat-label">마지막 플레이</span>
+              <span class="stat-value" id="last-played">-</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 업적 -->
+      <section class="achievements">
+        <h3>업적</h3>
+        <div class="achievement-list" id="achievement-list">
+          <div class="achievement-item locked">
+            <div class="achievement-icon">🏆</div>
+            <div class="achievement-info">
+              <h4>첫 걸음</h4>
+              <p>첫 번째 레벨 완료</p>
+              <div class="achievement-progress">0 / 1</div>
+            </div>
+          </div>
+          <div class="achievement-item locked">
+            <div class="achievement-icon">🎯</div>
+            <div class="achievement-info">
+              <h4>완벽주의자</h4>
+              <p>모든 레벨에서 3개 별 획득</p>
+              <div class="achievement-progress">0 / 7</div>
+            </div>
+          </div>
+          <div class="achievement-item locked">
+            <div class="achievement-icon">🧠</div>
+            <div class="achievement-info">
+              <h4>수학 천재</h4>
+              <p>100문제 정답</p>
+              <div class="achievement-progress">0 / 100</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 초기화 버튼 -->
+      <section class="reset-section">
+        <button class="btn btn-danger" onclick="resetProgress()">
+          🔄 진행도 초기화
+        </button>
+        <p class="warning-text">⚠️ 모든 진행도가 삭제됩니다!</p>
+      </section>
+    </div>
+  </main>
+
+  <!-- 푸터 -->
+  <footer class="footer">
+    <div class="container">
+      <p>&copy; 2026 도형 왕국. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- JavaScript -->
+  <script src="js/utils.js"></script>
+  <script src="js/progress-tracker.js"></script>
+  
+  <script>
+    // 진행도 로드 및 표시
+    window.addEventListener('DOMContentLoaded', () => {
+      loadProgress();
+    });
+
+    function loadProgress() {
+      const progress = ProgressTracker.getProgress();
+      
+      // 플레이어 정보
+      document.getElementById('player-level-badge').textContent = `Lv.${progress.player.level}`;
+      document.getElementById('player-level').textContent = progress.player.level;
+      document.getElementById('player-xp').textContent = `${progress.player.xp} / ${progress.player.level * 100}`;
+      document.getElementById('player-coins').textContent = `${progress.player.coins} 🪙`;
+      document.getElementById('total-score').textContent = progress.player.totalScore;
+      
+      // 경험치 바
+      const xpPercentage = (progress.player.xp / (progress.player.level * 100)) * 100;
+      document.getElementById('xp-bar').style.width = `${xpPercentage}%`;
+      
+      // 레벨별 진행도
+      for (let i = 1; i <= 7; i++) {
+        const levelData = progress.levels[i];
+        if (levelData) {
+          // 별점
+          for (let j = 1; j <= levelData.stars; j++) {
+            const star = document.getElementById(`level${i}-star${j}`);
+            if (star) {
+              star.classList.remove('empty');
+              star.classList.add('filled');
+              star.textContent = '⭐';
+            }
+          }
+          
+          // 점수
+          const scoreEl = document.getElementById(`level${i}-score`);
+          if (scoreEl) {
+            scoreEl.textContent = levelData.score;
+          }
+          
+          // 상태
+          const statusEl = document.getElementById(`level${i}-status`);
+          if (statusEl && levelData.completed) {
+            statusEl.textContent = '완료';
+            statusEl.classList.add('completed');
+          }
+        }
+      }
+      
+      // 통계
+      document.getElementById('total-questions').textContent = progress.stats.totalQuestions;
+      document.getElementById('correct-answers').textContent = progress.stats.correctAnswers;
+      document.getElementById('wrong-answers').textContent = progress.stats.wrongAnswers;
+      
+      const accuracy = progress.stats.totalQuestions > 0 
+        ? Math.round((progress.stats.correctAnswers / progress.stats.totalQuestions) * 100)
+        : 0;
+      document.getElementById('accuracy-rate').textContent = `${accuracy}%`;
+      
+      const playTimeMinutes = Math.floor(progress.stats.playTime / 60);
+      document.getElementById('play-time').textContent = `${playTimeMinutes}분`;
+      
+      if (progress.stats.lastPlayed) {
+        const lastPlayed = new Date(progress.stats.lastPlayed);
+        document.getElementById('last-played').textContent = lastPlayed.toLocaleDateString('ko-KR');
+      }
+    }
+
+    function resetProgress() {
+      if (confirm('정말로 진행도를 초기화하시겠습니까?\n모든 데이터가 삭제됩니다!')) {
+        ProgressTracker.reset();
+      }
+    }
+  </script>
+</body>
+</html>

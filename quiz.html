@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="도형 퀴즈로 실력을 테스트하세요">
+  <title>퀴즈 - 도형 왕국</title>
+  
+  <!-- CSS -->
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  <link rel="stylesheet" href="css/quiz.css">
+  
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="quiz-page">
+  <!-- 헤더 -->
+  <header class="header">
+    <div class="container">
+      <button class="btn-back" onclick="history.back()">← 뒤로</button>
+      <div>
+        <h1 id="quiz-level-title">퀴즈</h1>
+        <span id="quiz-level-badge" style="display:none;font-size:12px;background:#667eea;color:#fff;padding:2px 8px;border-radius:999px;"></span>
+      </div>
+      <div class="quiz-timer" id="timer">5:00</div>
+    </div>
+  </header>
+
+  <!-- 메인 콘텐츠 -->
+  <main class="main">
+    <div class="container">
+      <!-- 퀴즈 진행률 -->
+      <div class="quiz-progress">
+        <div class="progress-info">
+          <span id="progress-text">1 / 10</span>
+        </div>
+        <div class="progress-bar-container">
+          <div class="progress-bar" id="progress-bar" style="width: 10%"></div>
+        </div>
+      </div>
+
+      <!-- 퀴즈 컨테이너 -->
+      <div class="quiz-container" id="quiz-container">
+        <!-- 문제 -->
+        <div class="question-section">
+          <h2 class="question-text" id="question-text">문제를 불러오는 중...</h2>
+          
+          <!-- 도형 표시 영역 -->
+          <div class="shape-display" id="shape-display"></div>
+        </div>
+
+        <!-- 선택지 -->
+        <div class="options-section">
+          <button class="option-btn" data-index="0" type="button">
+            <span class="option-label">A</span>
+            <span class="option-text">-</span>
+          </button>
+          <button class="option-btn" data-index="1" type="button">
+            <span class="option-label">B</span>
+            <span class="option-text">-</span>
+          </button>
+          <button class="option-btn" data-index="2" type="button">
+            <span class="option-label">C</span>
+            <span class="option-text">-</span>
+          </button>
+          <button class="option-btn" data-index="3" type="button">
+            <span class="option-label">D</span>
+            <span class="option-text">-</span>
+          </button>
+        </div>
+
+        <!-- 피드백 -->
+        <div class="feedback" id="feedback" style="display: none;">
+          <p class="feedback-text">정답입니다! 🎉</p>
+        </div>
+
+        <!-- 해설 -->
+        <div class="explanation" id="explanation" style="display: none;">
+          <h4>해설</h4>
+          <p id="explanation-text">삼각형은 변이 3개입니다!</p>
+        </div>
+
+        <!-- 힌트 -->
+        <div class="hint" id="hint" style="display: none;">
+          <p>💡 힌트: <span id="hint-text">삼각형의 '삼'은 3을 의미해요</span></p>
+        </div>
+
+        <!-- 캐릭터 대사 -->
+        <div class="character-dialogue" id="character-dialogue" style="display: none;">
+          <img id="character-img" src="assets/images/characters/sam.png" alt="캐릭터">
+          <div class="dialogue-bubble">
+            <p id="dialogue-text">정답이야! 대단해!</p>
+          </div>
+        </div>
+
+        <!-- 버튼 -->
+        <div class="quiz-buttons">
+          <button class="btn btn-secondary" id="hint-btn" onclick="showHint()">
+            💡 힌트
+          </button>
+          <button class="btn btn-primary" id="next-btn" style="display: none;" onclick="nextQuestion()">
+            다음 문제 →
+          </button>
+        </div>
+      </div>
+
+      <!-- 결과 화면 -->
+      <div class="result-container" id="result-container" style="display: none;">
+        <div class="result-card">
+          <h2>퀴즈 완료! 🎉</h2>
+          
+          <div class="result-stars" id="result-stars">
+            ⭐⭐⭐
+          </div>
+          
+          <div class="result-stats">
+            <div class="stat-item">
+              <span class="stat-label">점수</span>
+              <span class="stat-value" id="result-score">100</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">정답</span>
+              <span class="stat-value correct" id="result-correct">10</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">오답</span>
+              <span class="stat-value wrong" id="result-wrong">0</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">정답률</span>
+              <span class="stat-value" id="result-percentage">100%</span>
+            </div>
+          </div>
+          
+          <p class="result-message" id="result-message">완벽해요! 🎉</p>
+          
+          <!-- 보상 -->
+          <div class="rewards" id="rewards">
+            <h3>보상</h3>
+            <div class="reward-items">
+              <div class="reward-item">
+                <span class="icon">🪙</span>
+                <span class="amount">+150</span>
+              </div>
+              <div class="reward-item">
+                <span class="icon">⭐</span>
+                <span class="amount">+300 XP</span>
+              </div>
+              <div class="reward-item">
+                <span class="icon">🃏</span>
+                <span class="amount">카드 3장</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 버튼 -->
+          <div class="result-buttons">
+            <button class="btn btn-secondary" onclick="retryQuiz()">
+              🔄 다시 도전
+            </button>
+            <button class="btn btn-primary" onclick="goHome()">
+              🏠 홈으로
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- JavaScript: quiz-data.js에 레벨별 문제가 들어 있음 (캐시 문제 방지) -->
+  <script src="js/utils.js"></script>
+  <script src="js/progress-tracker.js"></script>
+  <script src="js/quiz-data.js?v=3"></script>
+  <script src="js/quiz-system.js?v=3"></script>
+  
+  <script>
+    let quizSystem;
+
+    function getQuizLevelId() {
+      const params = new URLSearchParams(window.location.search);
+      const n = parseInt(params.get('level'), 10);
+      return n >= 1 && n <= 7 ? n : 1;
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const levelId = getQuizLevelId();
+      console.log('[Quiz Page] Starting level', levelId, window.location.search);
+
+      quizSystem = new QuizSystem(levelId);
+      quizSystem.init();
+
+      document.querySelectorAll('.option-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const index = parseInt(btn.getAttribute('data-index'), 10);
+          if (quizSystem) quizSystem.selectAnswer(index);
+        });
+      });
+    });
+    
+    // UI 함수들
+    function showHint() {
+      if (quizSystem) {
+        quizSystem.showHint();
+      }
+    }
+    
+    function nextQuestion() {
+      if (quizSystem) {
+        quizSystem.nextQuestion();
+      }
+    }
+    
+    function retryQuiz() {
+      location.reload();
+    }
+    
+    function goHome() {
+      window.location.href = 'index.html';
+    }
+  </script>
+</body>
+</html>

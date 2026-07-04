@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="도형 카드와 배지를 수집하세요">
+  <title>도감 - 도형 왕국</title>
+  
+  <!-- CSS -->
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="collection-page">
+  <!-- 헤더 -->
+  <header class="header">
+    <div class="container">
+      <button class="btn-back" onclick="history.back()">← 뒤로</button>
+      <h1>도감</h1>
+    </div>
+  </header>
+
+  <!-- 네비게이션 -->
+  <nav class="nav">
+    <div class="container">
+      <ul class="nav-list">
+        <li class="nav-item">
+          <a href="index.html">
+            <span class="icon">🏠</span>
+            <span class="text">홈</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="progress.html">
+            <span class="icon">📊</span>
+            <span class="text">진행도</span>
+          </a>
+        </li>
+        <li class="nav-item active">
+          <a href="collection.html">
+            <span class="icon">📚</span>
+            <span class="text">도감</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="shop.html">
+            <span class="icon">🏪</span>
+            <span class="text">상점</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="minigames.html">
+            <span class="icon">🎮</span>
+            <span class="text">게임</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- 메인 콘텐츠 -->
+  <main class="main">
+    <div class="container">
+      <!-- 수집 진행률 -->
+      <section class="collection-progress">
+        <h2>수집 진행률</h2>
+        <div class="progress-cards">
+          <div class="progress-card">
+            <div class="progress-icon">🃏</div>
+            <div class="progress-info">
+              <h3>도형 카드</h3>
+              <p class="progress-count"><span id="cards-collected">0</span> / 50</p>
+              <div class="progress-bar-container">
+                <div class="progress-bar" id="cards-progress-bar" style="width: 0%"></div>
+              </div>
+            </div>
+          </div>
+          <div class="progress-card">
+            <div class="progress-icon">🏆</div>
+            <div class="progress-info">
+              <h3>배지</h3>
+              <p class="progress-count"><span id="badges-collected">0</span> / 20</p>
+              <div class="progress-bar-container">
+                <div class="progress-bar" id="badges-progress-bar" style="width: 0%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 탭 메뉴 -->
+      <section class="collection-tabs">
+        <button class="tab-btn active" data-tab="cards" onclick="switchTab('cards')">
+          🃏 도형 카드
+        </button>
+        <button class="tab-btn" data-tab="badges" onclick="switchTab('badges')">
+          🏆 배지
+        </button>
+      </section>
+
+      <!-- 도형 카드 탭 -->
+      <section class="tab-content active" id="cards-tab">
+        <div class="filter-section">
+          <h3>필터</h3>
+          <div class="filter-buttons">
+            <button class="filter-btn active" data-filter="all" onclick="filterCards('all')">전체</button>
+            <button class="filter-btn" data-filter="2d" onclick="filterCards('2d')">평면 도형</button>
+            <button class="filter-btn" data-filter="3d" onclick="filterCards('3d')">입체 도형</button>
+            <button class="filter-btn" data-filter="special" onclick="filterCards('special')">특별</button>
+          </div>
+          <div class="rarity-filters">
+            <button class="rarity-btn" data-rarity="common" onclick="filterByRarity('common')">
+              <span class="rarity-icon common">⚪</span> 일반
+            </button>
+            <button class="rarity-btn" data-rarity="rare" onclick="filterByRarity('rare')">
+              <span class="rarity-icon rare">🔵</span> 레어
+            </button>
+            <button class="rarity-btn" data-rarity="epic" onclick="filterByRarity('epic')">
+              <span class="rarity-icon epic">🟣</span> 에픽
+            </button>
+            <button class="rarity-btn" data-rarity="legendary" onclick="filterByRarity('legendary')">
+              <span class="rarity-icon legendary">🟡</span> 전설
+            </button>
+          </div>
+        </div>
+
+        <div class="cards-grid" id="cards-grid">
+          <!-- 카드 예시 (JavaScript로 동적 생성) -->
+          <!-- 삼각형 카드 -->
+          <div class="card-item locked" data-card-id="triangle" data-type="2d" data-rarity="common">
+            <div class="card-rarity common">일반</div>
+            <div class="card-icon">🔺</div>
+            <h4>삼각형</h4>
+            <p class="card-number">#001</p>
+            <div class="card-lock">🔒</div>
+          </div>
+
+          <!-- 정사각형 카드 -->
+          <div class="card-item locked" data-card-id="square" data-type="2d" data-rarity="common">
+            <div class="card-rarity common">일반</div>
+            <div class="card-icon">🟦</div>
+            <h4>정사각형</h4>
+            <p class="card-number">#002</p>
+            <div class="card-lock">🔒</div>
+          </div>
+
+          <!-- 원 카드 -->
+          <div class="card-item locked" data-card-id="circle" data-type="2d" data-rarity="common">
+            <div class="card-rarity common">일반</div>
+            <div class="card-icon">🟡</div>
+            <h4>원</h4>
+            <p class="card-number">#003</p>
+            <div class="card-lock">🔒</div>
+          </div>
+
+          <!-- 정육면체 카드 -->
+          <div class="card-item locked" data-card-id="cube" data-type="3d" data-rarity="rare">
+            <div class="card-rarity rare">레어</div>
+            <div class="card-icon">🧊</div>
+            <h4>정육면체</h4>
+            <p class="card-number">#010</p>
+            <div class="card-lock">🔒</div>
+          </div>
+
+          <!-- 구 카드 -->
+          <div class="card-item locked" data-card-id="sphere" data-type="3d" data-rarity="rare">
+            <div class="card-rarity rare">레어</div>
+            <div class="card-icon">⚪</div>
+            <h4>구</h4>
+            <p class="card-number">#011</p>
+            <div class="card-lock">🔒</div>
+          </div>
+
+          <!-- 주령구 카드 -->
+          <div class="card-item locked" data-card-id="juryeonggu" data-type="special" data-rarity="legendary">
+            <div class="card-rarity legendary">전설</div>
+            <div class="card-icon">🎲</div>
+            <h4>주령구</h4>
+            <p class="card-number">#050</p>
+            <div class="card-lock">🔒</div>
+          </div>
+
+          <!-- 나머지 카드들은 JavaScript로 생성 -->
+        </div>
+      </section>
+
+      <!-- 배지 탭 -->
+      <section class="tab-content" id="badges-tab" style="display: none;">
+        <div class="badges-grid" id="badges-grid">
+          <!-- 배지 예시 -->
+          <div class="badge-item locked" data-badge-id="first-step">
+            <div class="badge-icon">🏆</div>
+            <div class="badge-info">
+              <h4>첫 걸음</h4>
+              <p class="badge-description">첫 번째 레벨 완료</p>
+              <div class="badge-progress">0 / 1</div>
+            </div>
+            <div class="badge-lock">🔒</div>
+          </div>
+
+          <div class="badge-item locked" data-badge-id="explorer">
+            <div class="badge-icon">🗺️</div>
+            <div class="badge-info">
+              <h4>탐험가</h4>
+              <p class="badge-description">모든 레벨 방문</p>
+              <div class="badge-progress">0 / 7</div>
+            </div>
+            <div class="badge-lock">🔒</div>
+          </div>
+
+          <div class="badge-item locked" data-badge-id="perfectionist">
+            <div class="badge-icon">🎯</div>
+            <div class="badge-info">
+              <h4>완벽주의자</h4>
+              <p class="badge-description">모든 레벨 3개 별 획득</p>
+              <div class="badge-progress">0 / 7</div>
+            </div>
+            <div class="badge-lock">🔒</div>
+          </div>
+
+          <div class="badge-item locked" data-badge-id="genius">
+            <div class="badge-icon">🧠</div>
+            <div class="badge-info">
+              <h4>수학 천재</h4>
+              <p class="badge-description">100문제 정답</p>
+              <div class="badge-progress">0 / 100</div>
+            </div>
+            <div class="badge-lock">🔒</div>
+          </div>
+
+          <div class="badge-item locked" data-badge-id="collector">
+            <div class="badge-icon">📚</div>
+            <div class="badge-info">
+              <h4>수집가</h4>
+              <p class="badge-description">카드 30장 수집</p>
+              <div class="badge-progress">0 / 30</div>
+            </div>
+            <div class="badge-lock">🔒</div>
+          </div>
+
+          <div class="badge-item locked" data-badge-id="master-collector">
+            <div class="badge-icon">👑</div>
+            <div class="badge-info">
+              <h4>마스터 수집가</h4>
+              <p class="badge-description">모든 카드 수집</p>
+              <div class="badge-progress">0 / 50</div>
+            </div>
+            <div class="badge-lock">🔒</div>
+          </div>
+
+          <div class="badge-item locked" data-badge-id="rich">
+            <div class="badge-icon">💰</div>
+            <div class="badge-info">
+              <h4>부자</h4>
+              <p class="badge-description">코인 1000개 보유</p>
+              <div class="badge-progress">0 / 1000</div>
+            </div>
+            <div class="badge-lock">🔒</div>
+          </div>
+
+          <div class="badge-item locked" data-badge-id="speedster">
+            <div class="badge-icon">⚡</div>
+            <div class="badge-info">
+              <h4>스피드스터</h4>
+              <p class="badge-description">퀴즈를 1분 안에 완료</p>
+              <div class="badge-progress">0 / 1</div>
+            </div>
+            <div class="badge-lock">🔒</div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- 카드 상세 모달 -->
+  <div class="modal" id="card-modal" style="display: none;">
+    <div class="modal-content card-detail">
+      <button class="btn-close" onclick="closeCardModal()">✕</button>
+      <div class="card-detail-header">
+        <div class="card-detail-icon" id="modal-card-icon">🔺</div>
+        <h2 id="modal-card-name">삼각형</h2>
+        <p class="card-detail-number" id="modal-card-number">#001</p>
+        <div class="card-detail-rarity" id="modal-card-rarity">일반</div>
+      </div>
+      <div class="card-detail-body">
+        <div class="card-detail-info">
+          <h4>설명</h4>
+          <p id="modal-card-description">변이 3개인 도형입니다.</p>
+        </div>
+        <div class="card-detail-properties">
+          <h4>속성</h4>
+          <ul id="modal-card-properties">
+            <li>변: 3개</li>
+            <li>꼭짓점: 3개</li>
+            <li>각: 3개</li>
+          </ul>
+        </div>
+        <div class="card-detail-examples">
+          <h4>예시</h4>
+          <p id="modal-card-examples">삼각자, 표지판, 피라미드</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 푸터 -->
+  <footer class="footer">
+    <div class="container">
+      <p>&copy; 2026 도형 왕국. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- JavaScript -->
+  <script src="js/utils.js"></script>
+  <script src="js/progress-tracker.js"></script>
+  
+  <script>
+    // 페이지 로드 시 초기화
+    window.addEventListener('DOMContentLoaded', () => {
+      loadCollection();
+    });
+
+    function loadCollection() {
+      const progress = ProgressTracker.getProgress();
+      
+      // 수집 진행률 표시
+      const cardsCollected = progress.cards ? progress.cards.length : 0;
+      const badgesCollected = progress.badges ? progress.badges.length : 0;
+      
+      document.getElementById('cards-collected').textContent = cardsCollected;
+      document.getElementById('badges-collected').textContent = badgesCollected;
+      
+      const cardsPercentage = (cardsCollected / 50) * 100;
+      const badgesPercentage = (badgesCollected / 20) * 100;
+      
+      document.getElementById('cards-progress-bar').style.width = `${cardsPercentage}%`;
+      document.getElementById('badges-progress-bar').style.width = `${badgesPercentage}%`;
+      
+      // 획득한 카드 표시
+      if (progress.cards) {
+        progress.cards.forEach(cardId => {
+          const cardEl = document.querySelector(`[data-card-id="${cardId}"]`);
+          if (cardEl) {
+            cardEl.classList.remove('locked');
+            cardEl.classList.add('unlocked');
+            cardEl.querySelector('.card-lock').style.display = 'none';
+          }
+        });
+      }
+      
+      // 획득한 배지 표시
+      if (progress.badges) {
+        progress.badges.forEach(badgeId => {
+          const badgeEl = document.querySelector(`[data-badge-id="${badgeId}"]`);
+          if (badgeEl) {
+            badgeEl.classList.remove('locked');
+            badgeEl.classList.add('unlocked');
+            badgeEl.querySelector('.badge-lock').style.display = 'none';
+          }
+        });
+      }
+    }
+
+    function switchTab(tabName) {
+      // 탭 버튼 활성화
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.tab === tabName) {
+          btn.classList.add('active');
+        }
+      });
+      
+      // 탭 콘텐츠 표시
+      document.querySelectorAll('.tab-content').forEach(content => {
+        content.style.display = 'none';
+      });
+      document.getElementById(`${tabName}-tab`).style.display = 'block';
+    }
+
+    function filterCards(type) {
+      const cards = document.querySelectorAll('.card-item');
+      const buttons = document.querySelectorAll('.filter-btn');
+      
+      // 버튼 활성화
+      buttons.forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.filter === type) {
+          btn.classList.add('active');
+        }
+      });
+      
+      // 카드 필터링
+      cards.forEach(card => {
+        if (type === 'all' || card.dataset.type === type) {
+          card.style.display = 'block';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+
+    function filterByRarity(rarity) {
+      const cards = document.querySelectorAll('.card-item');
+      
+      cards.forEach(card => {
+        if (card.dataset.rarity === rarity) {
+          card.style.display = 'block';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+
+    function closeCardModal() {
+      document.getElementById('card-modal').style.display = 'none';
+    }
+
+    // 카드 클릭 이벤트
+    document.addEventListener('click', (e) => {
+      const cardItem = e.target.closest('.card-item.unlocked');
+      if (cardItem) {
+        showCardDetail(cardItem.dataset.cardId);
+      }
+    });
+
+    function showCardDetail(cardId) {
+      // 카드 상세 정보 표시 (간단히 처리)
+      document.getElementById('card-modal').style.display = 'flex';
+    }
+  </script>
+</body>
+</html>

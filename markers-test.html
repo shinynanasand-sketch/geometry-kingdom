@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <title>화면 마커 (인쇄 없이 AR 테스트)</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: #fff;
+      font-family: 'Noto Sans KR', sans-serif;
+      color: #222;
+    }
+    .bar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      background: rgba(0,0,0,.85);
+      color: #fff;
+      z-index: 10;
+    }
+    .bar button {
+      border: none;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      background: #fff;
+    }
+    .bar button.active { background: #845EF7; color: #fff; }
+    .bar p { margin: 0; font-size: 13px; width: 100%; text-align: center; opacity: .9; }
+    .stage {
+      min-height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 80px 16px 24px;
+    }
+    .stage img {
+      width: min(90vw, 90vh);
+      height: min(90vw, 90vh);
+      object-fit: contain;
+      image-rendering: pixelated;
+      background: #fff;
+      border: 4px solid #111;
+    }
+  </style>
+</head>
+<body>
+  <div class="bar">
+    <button type="button" class="active" data-marker="hiro">Hiro (삼각형)</button>
+    <button type="button" data-marker="kanji">Kanji (사각형)</button>
+    <button type="button" data-marker="letterA">Letter A (원)</button>
+    <p>다른 기기·모니터에 이 화면을 띄운 뒤, PC 웹캠을 이쪽으로 향하세요</p>
+  </div>
+  <div class="stage">
+    <img id="marker-img" alt="AR marker" src="https://raw.githubusercontent.com/AR-js-org/AR.js/master/data/images/hiro.png">
+  </div>
+  <script>
+    var IMAGES = {
+      hiro: 'https://raw.githubusercontent.com/AR-js-org/AR.js/master/data/images/hiro.png',
+      kanji: 'https://raw.githubusercontent.com/AR-js-org/AR.js/master/data/images/kanji.png',
+      letterA: 'https://raw.githubusercontent.com/AR-js-org/AR.js/master/data/images/letterA.png'
+    };
+    var img = document.getElementById('marker-img');
+    document.querySelectorAll('.bar button[data-marker]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        document.querySelectorAll('.bar button').forEach(function (b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        img.src = IMAGES[btn.dataset.marker];
+      });
+    });
+  </script>
+</body>
+</html>

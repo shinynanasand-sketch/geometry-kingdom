@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>입체 도형 학습 - 도형 왕국</title>
+  <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    html, body { margin: 0; height: 100%; overflow: hidden; font-family: 'Noto Sans KR', sans-serif; }
+    #ar-scene { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; }
+    .ui {
+      position: fixed; inset: 0; z-index: 10; pointer-events: none;
+    }
+    .ui * { pointer-events: auto; }
+    .ui-header {
+      position: absolute; top: 0; left: 0; right: 0;
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 16px;
+      background: linear-gradient(to bottom, rgba(0,0,0,.65), transparent);
+      color: #fff;
+    }
+    .ui-header h2 { margin: 0; font-size: 18px; }
+    .ui-header p { margin: 2px 0 0; font-size: 13px; opacity: .9; }
+    .btn-back, .btn-place, .shape-btn, .ctrl-btn {
+      border: none; cursor: pointer; font-family: inherit;
+    }
+    .btn-back {
+      background: #fff; color: #333; border-radius: 8px; padding: 8px 12px; font-weight: 600;
+    }
+    .btn-place {
+      position: absolute; top: 72px; left: 12px;
+      background: linear-gradient(135deg, #51CF66, #20C997);
+      color: #fff; font-weight: 700; font-size: 15px;
+      padding: 14px 18px; border-radius: 12px;
+      box-shadow: 0 4px 14px rgba(32,201,151,.45);
+    }
+    .btn-camera-test {
+      position: absolute; top: 128px; left: 12px;
+      background: rgba(255,255,255,.95);
+      color: #333; font-weight: 600; font-size: 13px;
+      padding: 10px 14px; border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,.15);
+    }
+    .shape-panel {
+      position: absolute; top: 72px; right: 12px;
+      background: rgba(255,255,255,.95); border-radius: 12px; padding: 10px;
+      width: 132px; box-shadow: 0 4px 16px rgba(0,0,0,.18);
+    }
+    .shape-panel h4 { margin: 0 0 8px; font-size: 13px; }
+    .shape-btn {
+      display: flex; align-items: center; gap: 8px; width: 100%;
+      margin-bottom: 6px; padding: 8px; border-radius: 10px;
+      background: #fff; border: 2px solid #e9ecef; font-size: 12px;
+    }
+    .shape-btn.active {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: #fff; border-color: transparent;
+    }
+    .controls {
+      position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%);
+      display: flex; gap: 10px; align-items: center;
+    }
+    .ctrl-btn {
+      width: 52px; height: 52px; border-radius: 50%;
+      background: rgba(255,255,255,.95); font-size: 22px;
+      box-shadow: 0 4px 12px rgba(0,0,0,.2);
+    }
+    .scale-box {
+      display: flex; gap: 4px; background: rgba(255,255,255,.95);
+      border-radius: 26px; padding: 4px; box-shadow: 0 4px 12px rgba(0,0,0,.2);
+    }
+    .scale-box .ctrl-btn { width: 44px; height: 44px; box-shadow: none; background: transparent; font-weight: 700; }
+    #btn-minus { color: #e03131; }
+    #btn-plus { color: #2f9e44; }
+    .toast {
+      position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
+      background: rgba(0,0,0,.85); color: #fff; padding: 10px 18px;
+      border-radius: 20px; font-size: 14px; z-index: 20; pointer-events: none;
+    }
+    .info-panel {
+      display: none; position: absolute; top: 72px; left: 50%; transform: translateX(-50%);
+      background: rgba(255,255,255,.96); border-radius: 12px; padding: 12px 16px;
+      min-width: 220px; box-shadow: 0 4px 16px rgba(0,0,0,.2); font-size: 13px;
+    }
+    .info-panel.visible { display: block; }
+    .info-panel h3 { margin: 0 0 6px; font-size: 16px; }
+  </style>
+</head>
+<body>
+  <div class="ui">
+    <div class="ui-header">
+      <button class="btn-back" type="button" id="btn-back">← 뒤로</button>
+      <div>
+        <h2 id="level-title">레벨 3: 입체 도형</h2>
+        <p id="level-desc">도형을 고른 뒤 「도형 놓기」를 누르세요</p>
+      </div>
+    </div>
+
+    <button class="btn-place" type="button" id="btn-place">📍 도형 놓기</button>
+    <button class="btn-place btn-camera-test" type="button" id="btn-camera-test">📷 카메라 ON (테스트)</button>
+
+    <div class="shape-panel" id="shape-panel">
+      <h4>도형 선택</h4>
+      <div id="shape-buttons"></div>
+    </div>
+
+    <div class="info-panel" id="info-panel">
+      <h3 id="info-name">-</h3>
+      <p>면: <span id="info-faces">-</span> / 모서리: <span id="info-edges">-</span> / 꼭짓점: <span id="info-vertices">-</span></p>
+      <p id="info-desc">-</p>
+      <p>부피: <span id="info-formula">-</span></p>
+      <button type="button" id="btn-info-close" style="margin-top:6px;">닫기</button>
+    </div>
+
+    <div class="controls">
+      <button class="ctrl-btn" type="button" id="btn-rotate" title="회전">🔄</button>
+      <div class="scale-box">
+        <button class="ctrl-btn" type="button" id="btn-minus" title="작게">−</button>
+        <button class="ctrl-btn" type="button" id="btn-plus" title="크게">+</button>
+      </div>
+      <button class="ctrl-btn" type="button" id="btn-info" title="정보">ℹ️</button>
+      <button class="ctrl-btn" type="button" id="btn-delete" title="삭제">🗑️</button>
+      <button class="ctrl-btn" type="button" id="btn-quiz" title="퀴즈">📝</button>
+    </div>
+  </div>
+
+  <a-scene
+    id="ar-scene"
+    embedded
+    background="color: #B2F2BB"
+    vr-mode-ui="enabled: false"
+    device-orientation-permission-ui="enabled: false"
+    loading-screen="enabled: false"
+    renderer="antialias: true; colorManagement: true">
+
+    <a-entity id="rig" position="0 2.2 5" rotation="-25 0 0">
+      <a-entity
+        id="cam"
+        camera="active: true"
+        look-controls="magicWindowTrackingEnabled: false; pointerLockEnabled: false"
+        wasd-controls="enabled: false"
+        cursor="rayOrigin: mouse; fuse: false"
+        raycaster="objects: .placed-shape, #ground, a-box, a-sphere, a-cylinder, a-cone, a-plane; far: 100">
+      </a-entity>
+    </a-entity>
+
+    <a-entity light="type: ambient; intensity: 0.9"></a-entity>
+    <a-entity light="type: directional; intensity: 0.7" position="2 5 3"></a-entity>
+
+    <a-plane
+      id="ground"
+      position="0 0 0"
+      rotation="-90 0 0"
+      width="16"
+      height="16"
+      color="#51CF66"
+      opacity="0.7"
+      material="transparent: true; shader: flat; side: double">
+    </a-plane>
+
+    <a-entity id="shapes"></a-entity>
+  </a-scene>
+
+  <script>
+(function () {
+  'use strict';
+
+  var LEVEL_SHAPES = {
+    3: [
+      { type: 'cube', name: '정육면체', color: '#845EF7', faces: 6, edges: 12, vertices: 8, formula: 'a³', desc: '모든 면이 정사각형인 입체' },
+      { type: 'box', name: '직육면체', color: '#51CF66', faces: 6, edges: 12, vertices: 8, formula: '가로×세로×높이', desc: '직사각형 면으로 이루어진 입체' },
+      { type: 'sphere', name: '구', color: '#FF6B6B', faces: 1, edges: 0, vertices: 0, formula: '4/3πr³', desc: '모든 점이 중심에서 같은 거리' },
+      { type: 'cylinder', name: '원기둥', color: '#20C997', faces: 3, edges: 2, vertices: 0, formula: 'πr²h', desc: '원 밑면과 옆면으로 이루어진 입체' }
+    ],
+    4: [
+      { type: 'prism', name: '육각기둥', color: '#339AF0', faces: 8, edges: 18, vertices: 12, formula: '밑넓이×높이', desc: '육각형 밑면의 각기둥' },
+      { type: 'pyramid', name: '사각뿔', color: '#FF922B', faces: 5, edges: 8, vertices: 5, formula: '1/3×밑넓이×높이', desc: '사각형 밑면과 삼각형 옆면' },
+      { type: 'cone', name: '원뿔', color: '#F06595', faces: 2, edges: 1, vertices: 1, formula: '1/3πr²h', desc: '원 밑면과 꼭짓점' },
+      { type: 'cube', name: '정육면체', color: '#845EF7', faces: 6, edges: 12, vertices: 8, formula: 'a³', desc: '모든 면이 정사각형인 입체' }
+    ]
+  };
+
+  var params = new URLSearchParams(window.location.search);
+  var levelId = parseInt(params.get('level'), 10) || 3;
+  if (levelId < 3) levelId = 3;
+  if (levelId > 4) levelId = 4;
+
+  var shapes = LEVEL_SHAPES[levelId] || LEVEL_SHAPES[3];
+  var selectedType = shapes[0].type;
+  var selectedColor = shapes[0].color;
+  var placed = [];
+  var current = null;
+  var rotating = false;
+  var placeIndex = 0;
+
+  function $(id) { return document.getElementById(id); }
+
+  function toast(msg) {
+    var old = document.querySelector('.toast');
+    if (old) old.remove();
+    var el = document.createElement('div');
+    el.className = 'toast';
+    el.textContent = msg;
+    document.body.appendChild(el);
+    setTimeout(function () { el.remove(); }, 1800);
+  }
+
+  function getInfo(type) {
+    for (var i = 0; i < shapes.length; i++) {
+      if (shapes[i].type === type) return shapes[i];
+    }
+    return shapes[0];
+  }
+
+  function buildButtons() {
+    var box = $('shape-buttons');
+    box.innerHTML = '';
+    shapes.forEach(function (s, idx) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'shape-btn' + (idx === 0 ? ' active' : '');
+      btn.dataset.type = s.type;
+      btn.dataset.color = s.color;
+      btn.textContent = s.name;
+      btn.addEventListener('click', function () {
+        selectedType = s.type;
+        selectedColor = s.color;
+        document.querySelectorAll('.shape-btn').forEach(function (b) {
+          b.classList.toggle('active', b.dataset.type === s.type);
+        });
+        toast(s.name + ' 선택');
+      });
+      box.appendChild(btn);
+    });
+  }
+
+  function makeShapeEntity(type, color) {
+    var el;
+    if (type === 'cube') {
+      el = document.createElement('a-box');
+      el.setAttribute('width', '0.9');
+      el.setAttribute('height', '0.9');
+      el.setAttribute('depth', '0.9');
+    } else if (type === 'box') {
+      el = document.createElement('a-box');
+      el.setAttribute('width', '1.3');
+      el.setAttribute('height', '0.7');
+      el.setAttribute('depth', '0.9');
+    } else if (type === 'sphere') {
+      el = document.createElement('a-sphere');
+      el.setAttribute('radius', '0.45');
+    } else if (type === 'cylinder') {
+      el = document.createElement('a-cylinder');
+      el.setAttribute('radius', '0.4');
+      el.setAttribute('height', '0.9');
+    } else if (type === 'cone') {
+      el = document.createElement('a-cone');
+      el.setAttribute('radius-bottom', '0.45');
+      el.setAttribute('radius-top', '0');
+      el.setAttribute('height', '0.9');
+    } else if (type === 'pyramid') {
+      el = document.createElement('a-cone');
+      el.setAttribute('radius-bottom', '0.55');
+      el.setAttribute('radius-top', '0');
+      el.setAttribute('height', '0.9');
+      el.setAttribute('segments-radial', '4');
+    } else if (type === 'prism') {
+      el = document.createElement('a-cylinder');
+      el.setAttribute('radius', '0.45');
+      el.setAttribute('height', '0.9');
+      el.setAttribute('segments-radial', '6');
+    } else {
+      el = document.createElement('a-box');
+      el.setAttribute('width', '0.9');
+      el.setAttribute('height', '0.9');
+      el.setAttribute('depth', '0.9');
+    }
+    el.setAttribute('color', color);
+    el.setAttribute('shadow', 'cast: true');
+    el.classList.add('placed-shape');
+    el.dataset.shapeType = type;
+    el.dataset.baseScale = '1';
+    return el;
+  }
+
+  function groundY(type) {
+    if (type === 'sphere') return 0.45;
+    if (type === 'cylinder' || type === 'cone' || type === 'pyramid' || type === 'prism') return 0.45;
+    if (type === 'box') return 0.35;
+    return 0.45;
+  }
+
+  function defaultPos(index, type) {
+    var col = index % 3;
+    var row = Math.floor(index / 3);
+    return {
+      x: (col - 1) * 1.3,
+      y: groundY(type),
+      z: -0.3 - row * 1.3
+    };
+  }
+
+  function clearSelection() {
+    placed.forEach(function (item) {
+      item.el.removeAttribute('animation__pulse');
+      item.el.querySelectorAll('.sel-ring, .selection-ring').forEach(function (ring) {
+        if (ring.parentNode) ring.parentNode.removeChild(ring);
+      });
+      var s = parseFloat(item.el.dataset.baseScale || '1');
+      item.el.setAttribute('scale', s + ' ' + s + ' ' + s);
+    });
+  }
+
+  function selectEntity(el) {
+    if (!el) return;
+    clearSelection();
+    current = el;
+    var s = parseFloat(el.dataset.baseScale || '1');
+    el.setAttribute('scale', (s * 1.08) + ' ' + (s * 1.08) + ' ' + (s * 1.08));
+
+    var info = getInfo(el.dataset.shapeType);
+    selectedType = info.type;
+    selectedColor = info.color;
+    document.querySelectorAll('.shape-btn').forEach(function (b) {
+      b.classList.toggle('active', b.dataset.type === info.type);
+    });
+    updateInfoPanel(info);
+  }
+
+  function updateInfoPanel(info) {
+    $('info-name').textContent = info.name;
+    $('info-faces').textContent = info.faces + '개';
+    $('info-edges').textContent = info.edges + '개';
+    $('info-vertices').textContent = info.vertices + '개';
+    $('info-desc').textContent = info.desc;
+    $('info-formula').textContent = info.formula;
+  }
+
+  function placeShape() {
+    var container = $('shapes');
+    if (!container) {
+      toast('화면을 불러오는 중입니다');
+      return;
+    }
+    if (typeof AFRAME === 'undefined') {
+      toast('3D 엔진 로딩 중입니다. 잠시 후 다시 눌러주세요');
+      return;
+    }
+
+    var info = getInfo(selectedType);
+    var el = makeShapeEntity(selectedType, selectedColor);
+    var pos = defaultPos(placeIndex, selectedType);
+    placeIndex += 1;
+
+    el.setAttribute('position', pos.x + ' ' + pos.y + ' ' + pos.z);
+    container.appendChild(el);
+    placed.push({ el: el, type: selectedType });
+
+    // 클릭으로 선택
+    el.addEventListener('click', function (ev) {
+      ev.stopPropagation();
+      selectEntity(el);
+      toast(info.name + ' 선택됨');
+    });
+
+    selectEntity(el);
+    toast(info.name + ' 배치 완료!');
+  }
+
+  function scaleBy(delta) {
+    if (!current) {
+      toast('먼저 도형을 놓거나 선택하세요');
+      return;
+    }
+    var s = parseFloat(current.dataset.baseScale || '1');
+    s = Math.max(0.3, Math.min(2.0, s + delta));
+    current.dataset.baseScale = String(s);
+    var show = s * 1.08;
+    current.setAttribute('scale', show + ' ' + show + ' ' + show);
+    toast('크기 ' + (delta > 0 ? '+' : '−') + ' (' + s.toFixed(1) + ')');
+  }
+
+  var rotDragging = false;
+  var rotLastX = 0;
+  var rotLastY = 0;
+  var rotBound = false;
+
+  function setLookControls(enabled) {
+    var cam = $('cam');
+    if (!cam) return;
+    if (enabled) {
+      cam.setAttribute('look-controls', 'enabled: true; magicWindowTrackingEnabled: false; pointerLockEnabled: false');
+    } else {
+      cam.setAttribute('look-controls', 'enabled: false');
+    }
+  }
+
+  function applyDragRotation(dx, dy) {
+    if (!current) return;
+    var rot = current.getAttribute('rotation') || { x: 0, y: 0, z: 0 };
+    var x = Number(rot.x) || 0;
+    var y = Number(rot.y) || 0;
+    var z = Number(rot.z) || 0;
+    var speed = 0.6;
+    y -= dx * speed;
+    x += dy * speed;
+    current.setAttribute('rotation', x + ' ' + y + ' ' + z);
+  }
+
+  function bindDragRotate() {
+    if (rotBound) return;
+    rotBound = true;
+
+    function isUi(t) {
+      return !!(t && t.closest && t.closest('button, .ui, .shape-panel, .info-panel, .controls, .btn-place, .btn-camera-test'));
+    }
+
+    window.addEventListener('mousedown', function (e) {
+      if (!rotating || !current || isUi(e.target)) return;
+      rotDragging = true;
+      rotLastX = e.clientX;
+      rotLastY = e.clientY;
+      setLookControls(false);
+      document.body.style.cursor = 'grabbing';
+    }, true);
+
+    window.addEventListener('mousemove', function (e) {
+      if (!rotDragging || !rotating || !current) return;
+      applyDragRotation(e.clientX - rotLastX, e.clientY - rotLastY);
+      rotLastX = e.clientX;
+      rotLastY = e.clientY;
+    }, true);
+
+    window.addEventListener('mouseup', function () {
+      if (!rotDragging) return;
+      rotDragging = false;
+      document.body.style.cursor = rotating ? 'grab' : '';
+      if (!rotating) setLookControls(true);
+    }, true);
+
+    window.addEventListener('touchstart', function (e) {
+      if (!rotating || !current || isUi(e.target)) return;
+      var t = e.touches[0];
+      if (!t) return;
+      rotDragging = true;
+      rotLastX = t.clientX;
+      rotLastY = t.clientY;
+      setLookControls(false);
+      if (e.cancelable) e.preventDefault();
+    }, { capture: true, passive: false });
+
+    window.addEventListener('touchmove', function (e) {
+      if (!rotDragging || !rotating || !current) return;
+      var t = e.touches[0];
+      if (!t) return;
+      applyDragRotation(t.clientX - rotLastX, t.clientY - rotLastY);
+      rotLastX = t.clientX;
+      rotLastY = t.clientY;
+      if (e.cancelable) e.preventDefault();
+    }, { capture: true, passive: false });
+
+    window.addEventListener('touchend', function () {
+      if (!rotDragging) return;
+      rotDragging = false;
+      document.body.style.cursor = rotating ? 'grab' : '';
+      if (!rotating) setLookControls(true);
+    }, true);
+  }
+
+  function toggleRotate() {
+    if (!current) {
+      toast('먼저 도형을 놓거나 선택하세요');
+      return;
+    }
+    current.removeAttribute('animation');
+    rotating = !rotating;
+    bindDragRotate();
+    if (rotating) {
+      document.getElementById('btn-rotate').classList.add('active');
+      document.body.style.cursor = 'grab';
+      toast('회전 모드 ON — 마우스로 드래그하세요');
+    } else {
+      document.getElementById('btn-rotate').classList.remove('active');
+      document.body.style.cursor = '';
+      setLookControls(true);
+      toast('회전 모드 OFF');
+    }
+  }
+
+  function deleteCurrent() {
+    if (!current) {
+      toast('먼저 도형을 선택하세요');
+      return;
+    }
+    var name = getInfo(current.dataset.shapeType).name;
+    var el = current;
+    placed = placed.filter(function (p) { return p.el !== el; });
+    if (el.parentNode) el.parentNode.removeChild(el);
+    current = null;
+    rotating = false;
+    $('info-panel').classList.remove('visible');
+    if (placed.length) {
+      selectEntity(placed[placed.length - 1].el);
+    }
+    toast(name + '을(를) 삭제했습니다');
+  }
+
+  function toggleInfo() {
+    if (!current) {
+      toast('먼저 도형을 놓거나 선택하세요');
+      return;
+    }
+    var panel = $('info-panel');
+    panel.classList.toggle('visible');
+    if (panel.classList.contains('visible')) {
+      updateInfoPanel(getInfo(current.dataset.shapeType));
+    }
+  }
+
+  // UI 연결
+  $('btn-back').onclick = function () { history.back(); };
+  $('btn-place').onclick = function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (rotating) {
+      toast('회전 모드에서는 도형을 놓을 수 없습니다. 🔄를 다시 누르세요');
+      return;
+    }
+    placeShape();
+  };
+  $('btn-plus').onclick = function () { scaleBy(0.2); };
+  $('btn-minus').onclick = function () { scaleBy(-0.2); };
+  $('btn-rotate').onclick = toggleRotate;
+  $('btn-delete').onclick = deleteCurrent;
+  $('btn-info').onclick = toggleInfo;
+  $('btn-info-close').onclick = function () { $('info-panel').classList.remove('visible'); };
+  $('btn-quiz').onclick = function () { location.href = 'quiz.html?level=' + levelId; };
+  $('btn-camera-test').onclick = function () {
+    toast('마커·카메라 테스트는 레벨 1–2에서 하세요');
+    setTimeout(function () {
+      location.href = 'ar-marker.html?level=1&mode=camera';
+    }, 900);
+  };
+
+  // 바닥 클릭으로도 배치 (회전 모드가 아닐 때만)
+  var ground = $('ground');
+  if (ground) {
+    ground.addEventListener('click', function () {
+      if (rotating) return;
+      placeShape();
+    });
+  }
+
+  // 제목
+  $('level-title').textContent = levelId === 4 ? '레벨 4: 입체 도형 심화' : '레벨 3: 입체 도형 기초';
+  buildButtons();
+
+  // A-Frame 로드 후 안내 + 샘플 도형 1개 자동 배치
+  function readyCheck(tries) {
+    tries = tries || 0;
+    var scene = $('ar-scene');
+    var container = $('shapes');
+
+    if (typeof AFRAME === 'undefined' || !scene || !container) {
+      if (tries < 20) {
+        setTimeout(function () { readyCheck(tries + 1); }, 300);
+      } else {
+        toast('3D 엔진을 불러오지 못했습니다. 인터넷 연결을 확인하세요');
+      }
+      return;
+    }
+
+    function onSceneReady() {
+      toast('도형을 고른 뒤 「📍 도형 놓기」를 누르세요');
+      // 화면에 바로 보이도록 샘플 1개 배치
+      if (placed.length === 0) {
+        placeShape();
+      }
+    }
+
+    if (scene.hasLoaded) {
+      onSceneReady();
+    } else {
+      scene.addEventListener('loaded', onSceneReady);
+      // 혹시 loaded 이벤트를 놓친 경우
+      setTimeout(function () {
+        if (placed.length === 0) onSceneReady();
+      }, 1500);
+    }
+  }
+  readyCheck();
+})();
+  </script>
+</body>
+</html>

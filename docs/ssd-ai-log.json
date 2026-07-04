@@ -1,0 +1,49 @@
+{
+  "project": "geometry-kingdom",
+  "methodology": "Specification Driven Development (SSD)",
+  "lastUpdated": "2026-07-04",
+  "entries": [
+    {
+      "date": "2026-05-18",
+      "actor": "Cline AI / Human",
+      "type": "spec",
+      "summary": "PRD·SRS·TRD·구현계획 등 명세 문서 초안 작성 및 프로젝트 골격 구성"
+    },
+    {
+      "date": "2026-06-29",
+      "actor": "Cursor Agent / Human",
+      "type": "infra",
+      "summary": "핵심 모듈·데이터·GitHub(geometry-kingdom) 연동 및 초기 push"
+    },
+    {
+      "date": "2026-07-04",
+      "actor": "Cursor Agent / Human",
+      "type": "mvp",
+      "summary": "MVP Phase 1–4: 레벨 1–4 3D 학습, 카메라 OFF 기본·카메라 ON 테스트, 마커 시뮬레이션, 레벨별 퀴즈, PRD v1.1, GitHub Pages 학생 테스트 배포"
+    },
+    {
+      "date": "2026-07-04",
+      "actor": "Cursor Agent / Human",
+      "type": "ux",
+      "summary": "도형 배치·선택·크기(−/+)·드래그 회전·삭제, 정보 패널 자동 표시 제거, 선택 링 제거"
+    },
+    {
+      "date": "2026-07-04",
+      "actor": "Cursor Agent / Human",
+      "type": "content",
+      "summary": "레벨 1 기초 vs 레벨 2 심화 도형 차별화, 퀴즈 레벨별 문제 분리 및 quiz-data.js 캐시 우회"
+    },
+    {
+      "date": "2026-07-04",
+      "actor": "Cursor Agent / Human",
+      "type": "docs",
+      "summary": "SSD 리포트 자동 생성 체계(generate-ssd-report.js) 및 GitHub Pages 연동"
+    },
+    {
+      "date": "2026-07-04",
+      "actor": "Cursor Agent / Human",
+      "type": "docs",
+      "summary": "SSD 리포트를 저장소 기본 README.md로 통합, CI로 자동 재생성"
+    }
+  ]
+}

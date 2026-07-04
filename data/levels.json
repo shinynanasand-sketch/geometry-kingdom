@@ -1,0 +1,331 @@
+{
+  "levels": [
+    {
+      "id": 1,
+      "name": "평면 도형 기초",
+      "difficulty": 1,
+      "icon": "⭐",
+      "description": "기본 도형: 삼각형, 사각형, 원을 배워요",
+      "targetGrade": "1-2학년",
+      "curriculum": ["2수03-03", "2수03-04"],
+      "shapes": [
+        {
+          "type": "triangle",
+          "color": "#FF6B6B",
+          "marker": "hiro",
+          "name": "삼각형",
+          "description": "변이 3개인 기본 도형"
+        },
+        {
+          "type": "quad",
+          "color": "#4A90E2",
+          "marker": "kanji",
+          "name": "사각형",
+          "description": "변이 4개인 기본 도형"
+        },
+        {
+          "type": "circle",
+          "color": "#FFD43B",
+          "marker": "letterA",
+          "name": "원",
+          "description": "둥근 기본 도형"
+        }
+      ],
+      "quizCount": 10,
+      "timeLimit": 300,
+      "requiredScore": 60,
+      "rewards": {
+        "coins": 50,
+        "xp": 100,
+        "cards": ["triangle-card", "square-card", "circle-card"]
+      },
+      "characters": ["sam", "dongle"]
+    },
+    {
+      "id": 2,
+      "name": "평면 도형 심화",
+      "difficulty": 2,
+      "icon": "⭐⭐",
+      "description": "사각형·삼각형의 종류를 자세히 배워요",
+      "targetGrade": "3-4학년",
+      "curriculum": ["4수03-01", "4수03-02", "4수03-05"],
+      "shapes": [
+        {
+          "type": "square",
+          "color": "#4A90E2",
+          "marker": "hiro",
+          "name": "정사각형",
+          "description": "네 변의 길이가 같고, 네 각이 모두 직각인 사각형"
+        },
+        {
+          "type": "rectangle",
+          "color": "#51CF66",
+          "marker": "kanji",
+          "name": "직사각형",
+          "description": "네 각이 모두 직각인 사각형"
+        },
+        {
+          "type": "rhombus",
+          "color": "#845EF7",
+          "marker": "letterA",
+          "name": "마름모",
+          "description": "네 변의 길이가 모두 같은 사각형"
+        },
+        {
+          "type": "parallelogram",
+          "color": "#20C997",
+          "marker": "hiro",
+          "name": "평행사변형",
+          "description": "마주 보는 변이 각각 평행한 사각형"
+        },
+        {
+          "type": "trapezoid",
+          "color": "#FF922B",
+          "marker": "kanji",
+          "name": "사다리꼴",
+          "description": "한 쌍의 대변이 평행한 사각형"
+        },
+        {
+          "type": "rightTriangle",
+          "color": "#FF8787",
+          "marker": "letterA",
+          "name": "직각삼각형",
+          "description": "한 각이 직각인 삼각형"
+        },
+        {
+          "type": "isoscelesTriangle",
+          "color": "#FFA8A8",
+          "marker": "hiro",
+          "name": "이등변삼각형",
+          "description": "두 변의 길이가 같은 삼각형"
+        }
+      ],
+      "quizCount": 15,
+      "timeLimit": 450,
+      "requiredScore": 70,
+      "rewards": {
+        "coins": 75,
+        "xp": 150,
+        "cards": ["rectangle-card", "rhombus-card", "trapezoid-card"]
+      },
+      "characters": ["nemo", "sam"]
+    },
+    {
+      "id": 3,
+      "name": "입체 도형 기초",
+      "difficulty": 2,
+      "icon": "⭐⭐",
+      "description": "정육면체, 직육면체, 구, 원기둥을 배워요",
+      "targetGrade": "3-4학년",
+      "curriculum": ["4수03-06", "4수03-07"],
+      "shapes": [
+        {
+          "type": "cube",
+          "color": "#845EF7",
+          "marker": "hiro",
+          "name": "정육면체",
+          "description": "6개의 정사각형 면으로 이루어진 입체 도형"
+        },
+        {
+          "type": "box",
+          "color": "#51CF66",
+          "name": "직육면체",
+          "description": "6개의 직사각형 면으로 이루어진 입체 도형"
+        },
+        {
+          "type": "sphere",
+          "color": "#FF6B6B",
+          "marker": "kanji",
+          "name": "구",
+          "description": "한 점에서 같은 거리에 있는 점들의 모임 (3D)"
+        },
+        {
+          "type": "cylinder",
+          "color": "#20C997",
+          "marker": "letterA",
+          "name": "원기둥",
+          "description": "두 개의 원과 하나의 곡면으로 이루어진 입체 도형"
+        }
+      ],
+      "quizCount": 15,
+      "timeLimit": 450,
+      "requiredScore": 70,
+      "rewards": {
+        "coins": 100,
+        "xp": 200,
+        "cards": ["cube-card", "sphere-card", "cylinder-card"]
+      },
+      "characters": ["cube", "sphere"]
+    },
+    {
+      "id": 4,
+      "name": "입체 도형 심화",
+      "difficulty": 3,
+      "icon": "⭐⭐⭐",
+      "description": "각기둥, 각뿔, 원뿔을 배워요",
+      "targetGrade": "5-6학년",
+      "curriculum": ["6수03-08", "6수03-09", "6수03-10"],
+      "shapes": [
+        {
+          "type": "prism",
+          "color": "#339AF0",
+          "name": "육각기둥",
+          "description": "육각형 밑면과 직사각형 옆면으로 이루어진 각기둥"
+        },
+        {
+          "type": "pyramid",
+          "color": "#FFA94D",
+          "marker": "hiro",
+          "name": "사각뿔",
+          "description": "사각형 밑면과 4개의 삼각형 면으로 이루어진 입체 도형"
+        },
+        {
+          "type": "cone",
+          "color": "#FF8787",
+          "marker": "kanji",
+          "name": "원뿔",
+          "description": "하나의 원과 하나의 곡면으로 이루어진 입체 도형"
+        },
+        {
+          "type": "cube",
+          "color": "#845EF7",
+          "marker": "letterA",
+          "name": "정육면체",
+          "description": "6개의 정사각형 면으로 이루어진 입체 도형"
+        }
+      ],
+      "quizCount": 20,
+      "timeLimit": 600,
+      "requiredScore": 75,
+      "rewards": {
+        "coins": 150,
+        "xp": 300,
+        "cards": ["pyramid-card", "cone-card", "prism-card"]
+      },
+      "characters": ["cube", "nemo"]
+    },
+    {
+      "id": 5,
+      "name": "넓이와 부피",
+      "difficulty": 3,
+      "icon": "⭐⭐⭐",
+      "description": "넓이 공식과 부피 공식을 배워요",
+      "targetGrade": "5-6학년",
+      "curriculum": ["5수03-03", "6수03-11", "6수03-12"],
+      "shapes": [
+        {
+          "type": "square",
+          "color": "#4A90E2",
+          "marker": "hiro",
+          "name": "정사각형",
+          "description": "넓이 = 한 변 × 한 변"
+        },
+        {
+          "type": "cube",
+          "color": "#845EF7",
+          "marker": "kanji",
+          "name": "정육면체",
+          "description": "부피 = 한 변 × 한 변 × 한 변"
+        },
+        {
+          "type": "cylinder",
+          "color": "#20C997",
+          "marker": "letterA",
+          "name": "원기둥",
+          "description": "부피 = 밑넓이 × 높이"
+        }
+      ],
+      "quizCount": 20,
+      "timeLimit": 600,
+      "requiredScore": 75,
+      "rewards": {
+        "coins": 200,
+        "xp": 400,
+        "cards": ["formula-card-1", "formula-card-2"]
+      },
+      "characters": ["nemo", "sphere"]
+    },
+    {
+      "id": 6,
+      "name": "종합 챌린지",
+      "difficulty": 4,
+      "icon": "⭐⭐⭐⭐",
+      "description": "모든 개념을 종합해서 도전해요",
+      "targetGrade": "전체",
+      "curriculum": ["2수03-03", "4수03-01", "6수03-08"],
+      "shapes": [
+        {
+          "type": "triangle",
+          "color": "#FF6B6B",
+          "marker": "hiro",
+          "name": "삼각형",
+          "description": "변이 3개인 도형"
+        },
+        {
+          "type": "cube",
+          "color": "#845EF7",
+          "marker": "kanji",
+          "name": "정육면체",
+          "description": "6개의 정사각형 면으로 이루어진 입체 도형"
+        },
+        {
+          "type": "sphere",
+          "color": "#FF6B6B",
+          "marker": "letterA",
+          "name": "구",
+          "description": "한 점에서 같은 거리에 있는 점들의 모임 (3D)"
+        }
+      ],
+      "quizCount": 30,
+      "timeLimit": 900,
+      "requiredScore": 80,
+      "rewards": {
+        "coins": 300,
+        "xp": 500,
+        "cards": ["master-card", "champion-card"]
+      },
+      "characters": ["confuser", "sam", "nemo"]
+    },
+    {
+      "id": 7,
+      "name": "주령구 도형 공방",
+      "difficulty": 5,
+      "icon": "🎲⭐⭐⭐⭐⭐",
+      "description": "통일신라시대 주령구와 다면체를 배워요",
+      "targetGrade": "특별",
+      "curriculum": ["6수03-08", "역사"],
+      "shapes": [
+        {
+          "type": "juryeonggu",
+          "color": "#D4AF37",
+          "marker": "hiro",
+          "name": "주령구",
+          "description": "14면체 (깎은 정육면체)"
+        },
+        {
+          "type": "cube",
+          "color": "#845EF7",
+          "marker": "kanji",
+          "name": "정육면체",
+          "description": "6개의 정사각형 면으로 이루어진 입체 도형"
+        },
+        {
+          "type": "pyramid",
+          "color": "#FFA94D",
+          "marker": "letterA",
+          "name": "사각뿔",
+          "description": "사각형 밑면과 4개의 삼각형 면으로 이루어진 입체 도형"
+        }
+      ],
+      "quizCount": 10,
+      "timeLimit": 600,
+      "requiredScore": 70,
+      "rewards": {
+        "coins": 500,
+        "xp": 1000,
+        "cards": ["juryeonggu-card", "history-card", "treasure-card"]
+      },
+      "characters": ["princess", "craftsman", "euler"]
+    }
+  ]
+}
